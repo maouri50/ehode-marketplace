@@ -83,3 +83,7 @@
 - [x] Verify the GitHub repository contains the complete project structure and provide corrected Vercel deployment settings.
 - [x] Diagnose why the Vercel root route serves bundled server JavaScript instead of the Ehode storefront.
 - [x] Provide a Vercel-compatible deployment configuration and verify the generated storefront entry point.
+- [x] Diagnose the empty catalog and unavailable uploaded assets in the Vercel static deployment.
+- [x] Document the database, storage, and API runtime requirements for a complete external Ehode launch.
+- [ ] Upload the Vercel serverless API adapter and configuration to GitHub, then redeploy Vercel.
+- [ ] Verify the live Vercel tRPC catalog route returns JSON rather than 404 after the adapter deployment.

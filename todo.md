@@ -57,6 +57,8 @@
 - [ ] Display buyer email addresses only in the password-protected /admin order history.
 - [ ] Add regression coverage for email validation, order capture, and private admin access to buyer email data.
 - [ ] Refine the buyer email and PayPal area so the cart keeps a compact, visually consistent checkout layout.
+- [x] Diagnose and fix the root-page tRPC request that returns HTML instead of JSON when opened with from_webdev=1.
+- [x] Verify public catalog, category, and checkout configuration tRPC responses return valid JSON after the fix.
 - [x] Package the complete source code for GitHub handoff without environment secrets, local dependencies, generated builds, or development logs.
 - [x] Provide GitHub upload and deployment instructions, including the required environment variable names without their values.
 - [x] Supersede the Sandbox purchase test with PayPal Live preflight verification before public launch.
@@ -77,3 +79,7 @@
 - [x] Add mobile-only bottom navigation and an accessible cart shortcut without creating buyer accounts.
 - [x] Verify the homepage, product details, and cart on a phone-sized viewport.
 - [x] Confirm the Download free action starts a direct file download after the mobile UI changes.
+- [x] Diagnose the Vercel pnpm install build failure after the GitHub source upload.
+- [x] Verify the GitHub repository contains the complete project structure and provide corrected Vercel deployment settings.
+- [x] Diagnose why the Vercel root route serves bundled server JavaScript instead of the Ehode storefront.
+- [x] Provide a Vercel-compatible deployment configuration and verify the generated storefront entry point.

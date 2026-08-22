@@ -9,7 +9,7 @@ import { Link } from "wouter";
 const heroImage = "/manus-storage/pink-creative-workspace_66189688.jpeg";
 
 export default function Home() {
-  const { data: products = [], isLoading, error } = trpc.storefront.catalog.list.useQuery();
+  const { data: products = [], isLoading, error } = trpc.storefront.catalog.list.useQuery({});
   const { data: categories = [] } = trpc.storefront.catalog.categories.useQuery();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);

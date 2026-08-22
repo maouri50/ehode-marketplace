@@ -16,6 +16,13 @@ describe("PayPal storefront catalog", () => {
     expect(listings.every((listing) => typeof listing.assetCount === "number")).toBe(true);
   });
 
+  it("accepts a null catalog input so preview and empty-filter requests return JSON", async () => {
+    const caller = appRouter.createCaller(anonymousContext());
+    const listings = await (caller.storefront.catalog.list as (input: null) => Promise<unknown[]>)(null);
+
+    expect(listings.length).toBeGreaterThanOrEqual(9);
+  });
+
   it("does not reveal download grants for a guessed receipt token", async () => {
     const caller = appRouter.createCaller(anonymousContext());
     await expect(caller.storefront.downloads.byReceipt({ receiptToken: "z".repeat(40) })).rejects.toMatchObject({ code: "NOT_FOUND" });

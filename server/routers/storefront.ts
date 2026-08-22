@@ -25,7 +25,7 @@ async function requireDb() {
 
 export const storefrontRouter = router({
   catalog: router({
-    list: publicProcedure.input(z.object({ category: z.string().optional(), query: z.string().max(120).optional() }).optional()).query(async ({ input }) => {
+    list: publicProcedure.input(z.object({ category: z.string().optional(), query: z.string().max(120).optional() }).nullish()).query(async ({ input }) => {
       const db = await requireDb();
       const rows = await db.select({
         id: marketplaceListings.id,

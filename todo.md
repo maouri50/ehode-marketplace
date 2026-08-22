@@ -52,3 +52,13 @@
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
+- [ ] Audit current indexability, metadata, canonical URLs, and page-level SEO for the storefront and product pages.
+- [ ] Convert the public home and product routes from a client-only shell to crawler-visible SSR without rendering private admin or buyer data.
+- [ ] Add unique page titles, descriptions, Open Graph metadata, and product structured data.
+- [ ] Add dynamic sitemap.xml and robots.txt routes for public products and core storefront pages.
+- [ ] Verify the SEO metadata, sitemap, and crawl directives before publishing.
+- [ ] Document Google Search Console submission steps after the production domain is published.
+- [x] Redesign the public mobile header, search, category browsing, product cards, and purchase cues for touch-first marketplace browsing.
+- [x] Add mobile-only bottom navigation and an accessible cart shortcut without creating buyer accounts.
+- [x] Verify the homepage, product details, and cart on a phone-sized viewport.
+- [x] Confirm the Download free action starts a direct file download after the mobile UI changes.

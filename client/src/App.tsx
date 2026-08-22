@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Downloads from "./pages/Downloads";
 import Admin from "./pages/Admin";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -43,6 +44,7 @@ function App() {
           <CartProvider>
             <Toaster />
             <Router />
+            <MobileBottomNav />
           </CartProvider>
         </TooltipProvider>
       </ThemeProvider>

@@ -258,8 +258,11 @@ a { color: inherit; }
 .marketplace-header { position: sticky; top: 0; z-index: 40; background: rgba(255,253,249,.96); border-bottom: 1px solid #e8e4df; }
 .marketplace-header__notice { min-height: 30px; display: grid; place-items: center; padding: .35rem 1rem; background: #f1641e; color: white; font-size: .7rem; font-weight: 800; letter-spacing: .03em; text-align: center; }
 .marketplace-header__main { min-height: 70px; display: flex; align-items: center; gap: 1rem; max-width: 1440px; padding: 0 1.1rem; margin: 0 auto; }
-.marketplace-header .store-brand { color: #f1641e; font-family: Arial, Helvetica, sans-serif; font-size: 1.9rem; letter-spacing: -.08em; }
-.marketplace-header .store-brand span { color: #f1641e; }
+.ehode-wordmark { display: inline-grid; gap: .05rem; min-width: 104px; color: #29221e; line-height: 1; text-decoration: none; }
+.ehode-wordmark__name { font-family: Georgia, 'Times New Roman', serif; font-size: 1.72rem; font-weight: 700; letter-spacing: -.095em; }
+.ehode-wordmark__dot { color: #f1641e; }
+.ehode-wordmark__descriptor { padding-left: .08rem; color: #8a7565; font-family: Arial, Helvetica, sans-serif; font-size: .46rem; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+.ehode-wordmark:hover .ehode-wordmark__name { color: #f1641e; }
 .marketplace-nav { display: none; gap: 1.25rem; margin-left: 1.2rem; }
 .marketplace-nav a, .header-search-link { display: inline-flex; align-items: center; gap: .35rem; color: #37322e; font-size: .82rem; font-weight: 700; text-decoration: none; }
 .marketplace-nav a:hover, .header-search-link:hover { color: #b94613; text-decoration: underline; text-underline-offset: 4px; }
@@ -417,3 +420,4 @@ a { color: inherit; }
 .admin-listing__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin-top: .75rem; color: #70675f; font-size: .7rem; }.admin-upload, .admin-small-button { display: inline-flex; align-items: center; gap: .35rem; border: 1px solid #d9d2ca; border-radius: 7px; background: #fff; padding: .42rem .55rem; color: #443c35; font-size: .7rem; font-weight: 800; }.admin-upload { cursor: pointer; }.admin-upload input { display: none; }.admin-small-button:disabled { opacity: .45; }.admin-edit { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e8e2dc; }.admin-cancel { margin-left: .6rem; border: 0; background: transparent; color: #6d6259; font-size: .78rem; font-weight: 800; }
 .admin-orders { margin-top: 1rem; }.admin-order-table { display: grid; gap: .55rem; margin-top: 1rem; }.admin-order-table > div { display: grid; grid-template-columns: 1.4fr repeat(4, auto); align-items: center; gap: .5rem; padding: .75rem 0; border-top: 1px solid #e8e2dc; color: #675e56; font-size: .7rem; }.admin-order-table > div > span:first-child { overflow: hidden; color: #312a25; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 900px) { .admin-main { padding: 2rem; }.admin-header { padding: 0 2rem; }.admin-layout { grid-template-columns: minmax(320px,.78fr) minmax(0,1.22fr); }.admin-create { align-self: start; position: sticky; top: 1rem; } }
+@media (max-width: 680px) { .ehode-wordmark { min-width: auto; }.ehode-wordmark__name { font-size: 1.45rem; }.ehode-wordmark__descriptor { display: none; } }

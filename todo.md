@@ -44,6 +44,8 @@
 - [x] Add a product pricing mode that supports free resources alongside paid PayPal products.
 - [x] Add secure free-download access for published listings with an attached file and a zero price.
 - [ ] Verify cover image uploads and free downloads on the public product page.
+- [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
+- [x] Verify the revised Ehode title on desktop and mobile headers.
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.

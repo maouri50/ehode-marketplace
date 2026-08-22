@@ -1,3 +1,15 @@
+const configuredCanonicalOrigin = process.env.CANONICAL_ORIGIN?.trim();
+const configuredSiteName = process.env.SITE_NAME?.trim();
+
+function normalizeCanonicalOrigin(value?: string) {
+  try {
+    const url = new URL(value ?? "");
+    return url.protocol === "https:" && url.hostname ? url.origin : "https://ehode.com";
+  } catch {
+    return "https://ehode.com";
+  }
+}
+
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
@@ -11,4 +23,6 @@ export const ENV = {
   paypalSecret: process.env.PAYPAL_SECRET ?? "",
   paypalMode: process.env.PAYPAL_MODE ?? "sandbox",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
+  canonicalOrigin: normalizeCanonicalOrigin(configuredCanonicalOrigin),
+  siteName: configuredSiteName || "Ehode",
 };

@@ -52,12 +52,14 @@
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
-- [ ] Audit current indexability, metadata, canonical URLs, and page-level SEO for the storefront and product pages.
-- [ ] Convert the public home and product routes from a client-only shell to crawler-visible SSR without rendering private admin or buyer data.
-- [ ] Add unique page titles, descriptions, Open Graph metadata, and product structured data.
-- [ ] Add dynamic sitemap.xml and robots.txt routes for public products and core storefront pages.
-- [ ] Verify the SEO metadata, sitemap, and crawl directives before publishing.
-- [ ] Document Google Search Console submission steps after the production domain is published.
+- [x] Audit current indexability, metadata, canonical URLs, and page-level SEO for the storefront and product pages.
+- [x] Add crawler-visible server-rendered metadata for public home and product routes without rendering private admin or buyer data.
+- [x] Render crawlable public home and product-page content in the server HTML response, not only metadata.
+- [x] Add unique page titles, descriptions, Open Graph metadata, and product structured data.
+- [x] Add dynamic sitemap.xml and robots.txt routes for public products and core storefront pages.
+- [x] Verify the SEO metadata, sitemap, and crawl directives before publishing.
+- [x] Document Google Search Console submission steps after the production domain is published.
+- [x] Verify the saved Google Search Console launch guide is available in the project documentation.
 - [x] Redesign the public mobile header, search, category browsing, product cards, and purchase cues for touch-first marketplace browsing.
 - [x] Add mobile-only bottom navigation and an accessible cart shortcut without creating buyer accounts.
 - [x] Verify the homepage, product details, and cart on a phone-sized viewport.

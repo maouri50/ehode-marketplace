@@ -9,6 +9,7 @@ import { registerFreeDownloadRoutes } from "../freeDownloads";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { buildRobotsTxt, buildSitemapXml } from "../seo";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,14 @@ async function startServer() {
   registerStorageProxy(app);
   registerFreeDownloadRoutes(app);
   registerOAuthRoutes(app);
+  app.get("/robots.txt", (_req, res) => res.type("text/plain").send(buildRobotsTxt()));
+  app.get("/sitemap.xml", async (_req, res, next) => {
+    try {
+      res.type("application/xml").send(await buildSitemapXml());
+    } catch (error) {
+      next(error);
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",

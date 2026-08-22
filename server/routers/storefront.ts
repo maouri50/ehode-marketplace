@@ -80,6 +80,15 @@ export const storefrontRouter = router({
       const db = await requireDb();
       return db.select().from(catalogCategories).where(eq(catalogCategories.isActive, 1)).orderBy(asc(catalogCategories.sortOrder));
     }),
+    freeDownload: publicProcedure.input(z.object({ listingId: z.number().int().positive() })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const listing = await db.select().from(marketplaceListings).where(and(eq(marketplaceListings.id, input.listingId), activeListing)).limit(1);
+      if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "This resource is not available." });
+      if (Number(listing[0].priceAmount) !== 0) throw new TRPCError({ code: "FORBIDDEN", message: "This resource requires checkout." });
+      const assets = await db.select().from(productAssets).where(eq(productAssets.listingId, listing[0].id));
+      if (!assets.length) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "The free file is still being prepared." });
+      return { files: await Promise.all(assets.map(async (asset) => ({ filename: asset.originalFilename, url: await storageGetSignedUrl(asset.storageKey) }))) };
+    }),
   }),
   paypal: router({
     config: publicProcedure.query(() => ({ clientId: ENV.paypalClientId, mode: ENV.paypalMode })),
@@ -196,6 +205,15 @@ export const storefrontRouter = router({
       const uploaded = await storagePut(`product-files/${input.listingId}/${input.originalFilename}`, data, input.mimeType);
       await db.insert(productAssets).values({ listingId: input.listingId, storageKey: uploaded.key, originalFilename: input.originalFilename, mimeType: input.mimeType });
       return { success: true };
+    }),
+    uploadCover: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), originalFilename: z.string().min(1).max(255), mimeType: z.string().regex(/^image\/(png|jpeg|webp|gif)$/), base64Data: z.string().min(16).max(18_000_000) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const listing = await db.select({ id: marketplaceListings.id }).from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
+      if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
+      const safeFilename = input.originalFilename.replace(/[^a-zA-Z0-9._-]+/g, "-");
+      const uploaded = await storagePut(`product-covers/${input.listingId}/${safeFilename}`, Buffer.from(input.base64Data, "base64"), input.mimeType);
+      await db.update(marketplaceListings).set({ coverImageUrl: uploaded.url }).where(eq(marketplaceListings.id, input.listingId));
+      return { url: uploaded.url };
     }),
     setStatus: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
       const db = await requireDb();

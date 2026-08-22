@@ -40,6 +40,10 @@
 - [x] Add secure admin session handling, login, and logout.
 - [x] Provide /admin tools for product creation, editing, publishing, cover images, and protected download-file uploads.
 - [x] Verify anonymous visitors cannot access /admin product-management operations.
+- [x] Add an /admin cover-image upload control that stores the selected image and saves its URL to the product listing.
+- [x] Add a product pricing mode that supports free resources alongside paid PayPal products.
+- [x] Add secure free-download access for published listings with an attached file and a zero price.
+- [ ] Verify cover image uploads and free downloads on the public product page.
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.

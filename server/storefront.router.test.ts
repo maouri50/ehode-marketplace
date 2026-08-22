@@ -31,4 +31,13 @@ describe("PayPal storefront catalog", () => {
     expect(templates.length).toBeGreaterThan(0);
     expect(templates.every((listing) => listing.categoryHandle === "templates")).toBe(true);
   });
+
+  it("does not expose the attached paid Baby Stroller file through the free-download route", async () => {
+    const caller = appRouter.createCaller(anonymousContext());
+    const listings = await caller.storefront.catalog.list({ query: "baby stroller" });
+    const babyStroller = listings.find((listing) => listing.handle === "baby-stroller-svg-bundle");
+
+    expect(babyStroller?.assetCount).toBeGreaterThan(0);
+    await expect(caller.storefront.catalog.freeDownload({ listingId: babyStroller!.id })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
 });

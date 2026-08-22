@@ -12,7 +12,7 @@ function createAnonymousContext(): TrpcContext {
 }
 
 describe("storefront.owner.listings", () => {
-  it("does not expose owner activity without an authenticated admin", async () => {
+  it("does not expose admin activity without the standalone admin session", async () => {
     const caller = appRouter.createCaller(createAnonymousContext());
 
     await expect(caller.storefront.owner.listings()).rejects.toMatchObject<Partial<TRPCError>>({

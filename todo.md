@@ -26,14 +26,16 @@
 - [x] Document the marketplace expansion path and deployment prerequisites.
 - [ ] Upload the final digital file for each product in the owner workspace, then publish the listing.
 - [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
-- [ ] Diagnose and fix the PayPal Sandbox checkout window that did not complete during the Baby Stroller test.
+- [x] Diagnose and fix duplicate PayPal Sandbox control rendering; buyer approval remains deferred until final launch.
 - [ ] Complete the remaining PayPal Sandbox buyer approval without changing other storefront features.
-- [ ] Defer all remaining PayPal Sandbox and Live-mode work until the final launch phase.
+- [x] Defer all remaining PayPal Sandbox and Live-mode work until the final launch phase.
 - [x] Redesign the public storefront with an Etsy-inspired marketplace header, search, category navigation, dense product grid, and direct purchase cues.
 - [x] Preserve the existing PayPal checkout, protected download flow, and owner tools while changing the storefront layout.
 - [x] Verify the marketplace-style layout on desktop and mobile after the redesign.
-- [ ] Verify the owner workspace and order-history pages after the storefront refresh.
-- [ ] Defer owner-workspace login verification because the user does not want to use Manus sign-in at this stage.
+- [x] Supersede the Manus owner workspace with the standalone password-protected /admin workspace.
+- [x] Defer Manus owner-workspace login verification because the user does not want to use Manus sign-in.
+- [x] Redirect the legacy /owner and /owner/orders routes to /admin so the old Manus workspace is not active.
+- [x] Remove remaining owner-workspace links and legacy management copy from the launch UI and tests.
 - [x] Create a standalone password-protected /admin route that does not use Manus sign-in.
 - [x] Add secure admin session handling, login, and logout.
 - [x] Provide /admin tools for product creation, editing, publishing, cover images, and protected download-file uploads.

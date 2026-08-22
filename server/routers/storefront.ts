@@ -6,7 +6,7 @@ import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrde
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storageGetSignedUrl, storagePut } from "../storage";
-import { adminProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
@@ -154,7 +154,7 @@ export const storefrontRouter = router({
     }),
   }),
   owner: router({
-    orders: adminProcedure.query(async () => {
+    orders: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       const orders = await db.select().from(marketplaceOrders).orderBy(desc(marketplaceOrders.createdAt)).limit(30);
       if (!orders.length) return [];
@@ -168,13 +168,13 @@ export const storefrontRouter = router({
         return { order, itemCount: orderItems.length, grantCount };
       });
     }),
-    listings: adminProcedure.query(async () => {
+    listings: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       return db.select({ listing: marketplaceListings, category: catalogCategories, assetCount: count(productAssets.id) }).from(marketplaceListings)
         .leftJoin(catalogCategories, eq(marketplaceListings.categoryId, catalogCategories.id)).leftJoin(productAssets, eq(productAssets.listingId, marketplaceListings.id))
         .groupBy(marketplaceListings.id, catalogCategories.id).orderBy(desc(marketplaceListings.updatedAt));
     }),
-    createListing: adminProcedure.input(z.object({ title: z.string().min(3).max(255), description: z.string().max(8000).optional(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3).default("USD"), productType: z.string().max(120).optional(), categoryId: z.number().int().positive().optional(), coverImageUrl: z.string().url().optional(), licenseName: z.string().max(160).optional() })).mutation(async ({ input }) => {
+    createListing: adminSessionProcedure.input(z.object({ title: z.string().min(3).max(255), description: z.string().max(8000).optional(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3).default("USD"), productType: z.string().max(120).optional(), categoryId: z.number().int().positive().optional(), coverImageUrl: z.string().url().optional(), licenseName: z.string().max(160).optional() })).mutation(async ({ input }) => {
       const db = await requireDb();
       const shop = await db.select({ id: shops.id }).from(shops).where(eq(shops.status, "active")).limit(1);
       if (!shop[0]) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Create an active shop before adding products." });
@@ -183,12 +183,12 @@ export const storefrontRouter = router({
       await db.insert(marketplaceListings).values({ shopId: shop[0].id, categoryId: input.categoryId ?? null, externalProductId, handle, title: input.title, description: input.description ?? null, productType: input.productType ?? null, priceAmount: money(input.priceAmount), currencyCode: input.currencyCode.toUpperCase(), coverImageUrl: input.coverImageUrl ?? null, licenseName: input.licenseName ?? null, status: "draft", isDigital: 1, featured: 0 });
       return { success: true };
     }),
-    updateListing: adminProcedure.input(z.object({ listingId: z.number().int().positive(), title: z.string().min(3).max(255), description: z.string().max(8000).nullable(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3), productType: z.string().max(120).nullable(), categoryId: z.number().int().positive().nullable(), coverImageUrl: z.string().url().nullable(), licenseName: z.string().max(160).nullable() })).mutation(async ({ input }) => {
+    updateListing: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), title: z.string().min(3).max(255), description: z.string().max(8000).nullable(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3), productType: z.string().max(120).nullable(), categoryId: z.number().int().positive().nullable(), coverImageUrl: z.string().url().nullable(), licenseName: z.string().max(160).nullable() })).mutation(async ({ input }) => {
       const db = await requireDb();
       await db.update(marketplaceListings).set({ title: input.title, description: input.description, priceAmount: money(input.priceAmount), currencyCode: input.currencyCode.toUpperCase(), productType: input.productType, categoryId: input.categoryId, coverImageUrl: input.coverImageUrl, licenseName: input.licenseName }).where(eq(marketplaceListings.id, input.listingId));
       return { success: true };
     }),
-    uploadAsset: adminProcedure.input(z.object({ listingId: z.number().int().positive(), originalFilename: z.string().min(1).max(255), mimeType: z.string().min(1).max(120), base64Data: z.string().min(16).max(30_000_000) })).mutation(async ({ input }) => {
+    uploadAsset: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), originalFilename: z.string().min(1).max(255), mimeType: z.string().min(1).max(120), base64Data: z.string().min(16).max(30_000_000) })).mutation(async ({ input }) => {
       const db = await requireDb();
       const listing = await db.select().from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
       if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
@@ -197,7 +197,7 @@ export const storefrontRouter = router({
       await db.insert(productAssets).values({ listingId: input.listingId, storageKey: uploaded.key, originalFilename: input.originalFilename, mimeType: input.mimeType });
       return { success: true };
     }),
-    setStatus: adminProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
+    setStatus: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
       const db = await requireDb();
       if (input.status === "published") {
         const assets = await db.select({ value: count() }).from(productAssets).where(eq(productAssets.listingId, input.listingId));

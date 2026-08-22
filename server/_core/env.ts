@@ -10,4 +10,5 @@ export const ENV = {
   paypalClientId: process.env.PAYPAL_CLIENT_ID ?? "",
   paypalSecret: process.env.PAYPAL_SECRET ?? "",
   paypalMode: process.env.PAYPAL_MODE ?? "sandbox",
+  adminPassword: process.env.ADMIN_PASSWORD ?? "",
 };

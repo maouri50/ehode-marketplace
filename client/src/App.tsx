@@ -10,6 +10,7 @@ import ProductDetail from "./pages/ProductDetail";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Downloads from "./pages/Downloads";
 import OwnerOrders from "./pages/OwnerOrders";
+import Admin from "./pages/Admin";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -19,6 +20,7 @@ function Router() {
       <Route path={"/products/:handle"} component={ProductDetail} />
       <Route path={"/owner"} component={OwnerDashboard} />
       <Route path={"/owner/orders"} component={OwnerOrders} />
+      <Route path={"/admin"} component={Admin} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

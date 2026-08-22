@@ -28,10 +28,16 @@
 - [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
 - [ ] Diagnose and fix the PayPal Sandbox checkout window that did not complete during the Baby Stroller test.
 - [ ] Complete the remaining PayPal Sandbox buyer approval without changing other storefront features.
+- [ ] Defer all remaining PayPal Sandbox and Live-mode work until the final launch phase.
 - [x] Redesign the public storefront with an Etsy-inspired marketplace header, search, category navigation, dense product grid, and direct purchase cues.
 - [x] Preserve the existing PayPal checkout, protected download flow, and owner tools while changing the storefront layout.
 - [x] Verify the marketplace-style layout on desktop and mobile after the redesign.
 - [ ] Verify the owner workspace and order-history pages after the storefront refresh.
+- [ ] Defer owner-workspace login verification because the user does not want to use Manus sign-in at this stage.
+- [x] Create a standalone password-protected /admin route that does not use Manus sign-in.
+- [x] Add secure admin session handling, login, and logout.
+- [x] Provide /admin tools for product creation, editing, publishing, cover images, and protected download-file uploads.
+- [x] Verify anonymous visitors cannot access /admin product-management operations.
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.

@@ -1,5 +1,6 @@
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
+import { hasAdminSession } from "../adminAuth";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 
@@ -41,5 +42,15 @@ export const adminProcedure = t.procedure.use(
         user: ctx.user,
       },
     });
+  }),
+);
+
+export const adminSessionProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    if (!hasAdminSession(opts.ctx.req)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Admin session required." });
+    }
+
+    return opts.next({ ctx: opts.ctx });
   }),
 );

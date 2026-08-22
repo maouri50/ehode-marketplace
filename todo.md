@@ -57,6 +57,8 @@
 - [ ] Display buyer email addresses only in the password-protected /admin order history.
 - [ ] Add regression coverage for email validation, order capture, and private admin access to buyer email data.
 - [ ] Refine the buyer email and PayPal area so the cart keeps a compact, visually consistent checkout layout.
+- [x] Package the complete source code for GitHub handoff without environment secrets, local dependencies, generated builds, or development logs.
+- [x] Provide GitHub upload and deployment instructions, including the required environment variable names without their values.
 - [x] Supersede the Sandbox purchase test with PayPal Live preflight verification before public launch.
 - [x] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
 - [x] Validate the PayPal Live OAuth connection using production credentials stored only in secure settings.

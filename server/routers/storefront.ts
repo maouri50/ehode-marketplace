@@ -10,6 +10,7 @@ import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
+const buyerEmailInput = z.string().trim().email().max(320).transform((value) => value.toLowerCase());
 const activeListing = eq(marketplaceListings.status, "published");
 
 function money(value: string | number) {
@@ -92,7 +93,7 @@ export const storefrontRouter = router({
   }),
   paypal: router({
     config: publicProcedure.query(() => ({ clientId: ENV.paypalClientId, mode: ENV.paypalMode })),
-    createOrder: publicProcedure.input(z.object({ items: z.array(cartInput).min(1).max(20) })).mutation(async ({ input }) => {
+    createOrder: publicProcedure.input(z.object({ items: z.array(cartInput).min(1).max(20), buyerEmail: buyerEmailInput })).mutation(async ({ input }) => {
       const db = await requireDb();
       const ids = Array.from(new Set(input.items.map((item) => item.listingId)));
       const listings = await db.select({
@@ -116,7 +117,7 @@ export const storefrontRouter = router({
       const order = await createPayPalOrder({ referenceId, description: listings.length === 1 ? listings[0]!.title : `${listings.length} digital resources from Ehode`, amount: money(total), currencyCode });
       return { id: order.id };
     }),
-    captureOrder: publicProcedure.input(z.object({ paypalOrderId: z.string().min(3).max(255) })).mutation(async ({ input, ctx }) => {
+    captureOrder: publicProcedure.input(z.object({ paypalOrderId: z.string().min(3).max(255), buyerEmail: buyerEmailInput })).mutation(async ({ input, ctx }) => {
       const db = await requireDb();
       const captured = await capturePayPalOrder(input.paypalOrderId);
       const referenceId = captured.purchase_units?.[0]?.reference_id ?? "";
@@ -130,7 +131,7 @@ export const storefrontRouter = router({
       const existing = await db.select().from(marketplaceOrders).where(eq(marketplaceOrders.paymentOrderId, input.paypalOrderId)).limit(1);
       if (existing[0]) return { orderId: existing[0].id, receiptToken: existing[0].receiptToken, alreadyCaptured: true };
       const receiptToken = nanoid(40);
-      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: captured.payer?.email_address ?? null, currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
+      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: input.buyerEmail ? input.buyerEmail : (captured.payer?.email_address ?? null), currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
       const orderId = Number((insertedOrder as any)[0]?.insertId);
       for (const item of items) {
         const listing = listings.find((candidate) => candidate.id === item.listingId)!;

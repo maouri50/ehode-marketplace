@@ -196,6 +196,14 @@ a { color: inherit; }
 .cart-summary > div { display: flex; justify-content: space-between; color: #34281f; font-size: 0.9rem; }
 .cart-summary > div strong { font-size: 1.05rem; }
 .cart-summary p { color: #837569; font-size: 0.72rem; line-height: 1.5; }
+.paypal-checkout { margin-top: 0.7rem; }
+.checkout-email { display: grid; gap: 0.28rem; margin: 0.65rem 0 0.8rem; }
+.checkout-email label { display: flex; align-items: baseline; justify-content: space-between; color: #403228; font-size: 0.75rem; font-weight: 750; }
+.checkout-email label span { color: #9c5d3e; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.checkout-email input { width: 100%; min-height: 2.45rem; padding: 0.55rem 0.7rem; border: 1px solid #dbd1c5; border-radius: 0.42rem; background: #fffefa; color: #30231b; font: inherit; }
+.checkout-email input:focus { outline: 3px solid rgba(236, 106, 40, 0.14); border-color: #d4632e; }
+.checkout-email small { color: #87786c; font-size: 0.66rem; line-height: 1.25; }
+.checkout-email em { color: #a83818; font-size: 0.68rem; font-style: normal; font-weight: 650; }
 .checkout-button { width: 100%; min-height: 48px; border: 1px solid #b94b5d; border-radius: 4px; background: #b94b5d; color: #fffaf5; font-size: 0.82rem; font-weight: 800; }
 
 .product-detail { padding-top: 2rem; padding-bottom: 5rem; }

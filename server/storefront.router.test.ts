@@ -40,4 +40,13 @@ describe("PayPal storefront catalog", () => {
     expect(babyStroller?.assetCount).toBeGreaterThan(0);
     await expect(caller.storefront.catalog.freeDownload({ listingId: babyStroller!.id })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
+
+  it("rejects a paid checkout without a valid buyer email before creating a PayPal order", async () => {
+    const caller = appRouter.createCaller(anonymousContext());
+
+    await expect(caller.storefront.paypal.createOrder({
+      items: [{ listingId: 5, quantity: 1 }],
+      buyerEmail: "not-an-email",
+    })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
 });

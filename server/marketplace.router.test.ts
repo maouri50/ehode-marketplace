@@ -32,4 +32,12 @@ describe("storefront.owner.listings", () => {
       code: "FORBIDDEN",
     });
   });
+
+  it("does not expose buyer email data through the admin order history without an admin session", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext());
+
+    await expect(caller.storefront.owner.orders()).rejects.toMatchObject<Partial<TRPCError>>({
+      code: "FORBIDDEN",
+    });
+  });
 });

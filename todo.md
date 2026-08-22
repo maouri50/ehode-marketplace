@@ -24,7 +24,7 @@
 - [x] Add a test for owner-only dashboard access.
 - [x] Verify desktop and mobile storefront layouts, database-backed workflows, and production build.
 - [x] Document the marketplace expansion path and deployment prerequisites.
-- [ ] Upload the final digital file for each product in the owner workspace, then publish the listing.
+- [x] Defer uploading the remaining product files and publishing additional listings until after launch at the user's request.
 - [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
 - [x] Diagnose and fix duplicate PayPal Sandbox control rendering; buyer approval remains deferred until final launch.
 - [x] Supersede the remaining Sandbox buyer approval with the completed PayPal Live OAuth, unapproved-order, and button-rendering preflight.
@@ -49,7 +49,14 @@
 - [x] Change free PDF and other resource links to download files automatically instead of opening them in the browser.
 - [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
 - [x] Verify the revised Ehode title on desktop and mobile headers.
-- [ ] Verify the protected buyer download page after the first completed PayPal Live payment.
+- [ ] After the first completed PayPal Live sale, verify the protected receipt page, signed file link, and delivered download end-to-end.
+- [ ] Record the post-launch PayPal order and protected-download verification result.
+- [ ] Diagnose and fix the PayPal Live approval window that opens briefly and closes before the buyer can approve payment.
+- [ ] Require a buyer email before paid PayPal checkout and explain that it is used for the order record and delivery access.
+- [ ] Persist the buyer-supplied email with the verified PayPal order, falling back to the PayPal payer email only when needed.
+- [ ] Display buyer email addresses only in the password-protected /admin order history.
+- [ ] Add regression coverage for email validation, order capture, and private admin access to buyer email data.
+- [ ] Refine the buyer email and PayPal area so the cart keeps a compact, visually consistent checkout layout.
 - [x] Supersede the Sandbox purchase test with PayPal Live preflight verification before public launch.
 - [x] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
 - [x] Validate the PayPal Live OAuth connection using production credentials stored only in secure settings.

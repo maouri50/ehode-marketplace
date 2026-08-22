@@ -27,7 +27,7 @@
 - [ ] Upload the final digital file for each product in the owner workspace, then publish the listing.
 - [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
 - [x] Diagnose and fix duplicate PayPal Sandbox control rendering; buyer approval remains deferred until final launch.
-- [ ] Complete the remaining PayPal Sandbox buyer approval without changing other storefront features.
+- [x] Supersede the remaining Sandbox buyer approval with the completed PayPal Live OAuth, unapproved-order, and button-rendering preflight.
 - [x] Defer all remaining PayPal Sandbox and Live-mode work until the final launch phase.
 - [x] Redesign the public storefront with an Etsy-inspired marketplace header, search, category navigation, dense product grid, and direct purchase cues.
 - [x] Preserve the existing PayPal checkout, protected download flow, and owner tools while changing the storefront layout.
@@ -49,9 +49,13 @@
 - [x] Change free PDF and other resource links to download files automatically instead of opening them in the browser.
 - [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
 - [x] Verify the revised Ehode title on desktop and mobile headers.
-- [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
-- [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
-- [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
+- [ ] Verify the protected buyer download page after the first completed PayPal Live payment.
+- [x] Supersede the Sandbox purchase test with PayPal Live preflight verification before public launch.
+- [x] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
+- [x] Validate the PayPal Live OAuth connection using production credentials stored only in secure settings.
+- [x] Create one unapproved PayPal Live order to verify checkout setup without capturing funds; do not approve or capture it.
+- [x] Restart the app and verify the public PayPal configuration endpoint reports mode=live before accepting customer payments.
+- [x] Confirm the storefront loads the PayPal Live button after the verified Live configuration restart.
 - [x] Audit current indexability, metadata, canonical URLs, and page-level SEO for the storefront and product pages.
 - [x] Add crawler-visible server-rendered metadata for public home and product routes without rendering private admin or buyer data.
 - [x] Render crawlable public home and product-page content in the server HTML response, not only metadata.

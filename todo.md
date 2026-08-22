@@ -25,5 +25,13 @@
 - [x] Verify desktop and mobile storefront layouts, database-backed workflows, and production build.
 - [x] Document the marketplace expansion path and deployment prerequisites.
 - [ ] Upload the final digital file for each product in the owner workspace, then publish the listing.
+- [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
+- [ ] Diagnose and fix the PayPal Sandbox checkout window that did not complete during the Baby Stroller test.
+- [ ] Complete the remaining PayPal Sandbox buyer approval without changing other storefront features.
+- [x] Redesign the public storefront with an Etsy-inspired marketplace header, search, category navigation, dense product grid, and direct purchase cues.
+- [x] Preserve the existing PayPal checkout, protected download flow, and owner tools while changing the storefront layout.
+- [x] Verify the marketplace-style layout on desktop and mobile after the redesign.
+- [ ] Verify the owner workspace and order-history pages after the storefront refresh.
+- [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.
 - [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
 - [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.

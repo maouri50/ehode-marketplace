@@ -27,6 +27,7 @@ export function PayPalCheckout() {
   const captureOrder = trpc.storefront.paypal.captureOrder.useMutation();
   const [, setLocation] = useLocation();
   const ref = useRef<HTMLDivElement>(null);
+  const buttonInstance = useRef<{ render: (element: HTMLElement) => void; close?: () => void } | null>(null);
   const [message, setMessage] = useState("");
   const currency = items[0]?.currencyCode ?? "USD";
   const readyItems = items.every((item) => item.assetCount > 0);
@@ -37,15 +38,18 @@ export function PayPalCheckout() {
     setMessage("");
     loadPayPalSdk(config.clientId, currency).then(() => {
       if (cancelled || !window.paypal || !ref.current) return;
+      buttonInstance.current?.close?.();
       ref.current.innerHTML = "";
-      window.paypal.Buttons({
+      const instance = window.paypal.Buttons({
         style: { layout: "vertical", color: "gold", shape: "rect", label: "paypal" },
         createOrder: async () => { const result = await createOrder.mutateAsync({ items: items.map((item) => ({ listingId: item.id, quantity: item.quantity })) }); return result.id; },
         onApprove: async (data: { orderID: string }) => { const result = await captureOrder.mutateAsync({ paypalOrderId: data.orderID }); clearCart(); closeCart(); setLocation(`/downloads/${result.receiptToken}`); },
         onError: () => setMessage("PayPal could not complete the order. Please try again."),
-      }).render(ref.current);
+      });
+      buttonInstance.current = instance;
+      instance.render(ref.current);
     }).catch(() => setMessage("PayPal checkout is unavailable right now."));
-    return () => { cancelled = true; };
+    return () => { cancelled = true; buttonInstance.current?.close?.(); buttonInstance.current = null; };
   }, [config?.clientId, currency, items, readyItems, createOrder, captureOrder, clearCart, closeCart, setLocation]);
 
   if (!items.length) return null;

@@ -87,7 +87,7 @@ export const storefrontRouter = router({
       if (Number(listing[0].priceAmount) !== 0) throw new TRPCError({ code: "FORBIDDEN", message: "This resource requires checkout." });
       const assets = await db.select().from(productAssets).where(eq(productAssets.listingId, listing[0].id));
       if (!assets.length) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "The free file is still being prepared." });
-      return { files: await Promise.all(assets.map(async (asset) => ({ filename: asset.originalFilename, url: await storageGetSignedUrl(asset.storageKey) }))) };
+      return { files: assets.map((asset) => ({ filename: asset.originalFilename, url: `/api/download/free/${listing[0]!.id}/${asset.id}` })) };
     }),
   }),
   paypal: router({

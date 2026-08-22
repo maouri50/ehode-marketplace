@@ -19,4 +19,17 @@ describe("storefront.owner.listings", () => {
       code: "FORBIDDEN",
     });
   });
+
+  it("does not allow anonymous visitors to upload a product cover image", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext());
+
+    await expect(caller.storefront.owner.uploadCover({
+      listingId: 1,
+      originalFilename: "cover.png",
+      mimeType: "image/png",
+      base64Data: "iVBORw0KGgoAAAANSUhEUg==",
+    })).rejects.toMatchObject<Partial<TRPCError>>({
+      code: "FORBIDDEN",
+    });
+  });
 });

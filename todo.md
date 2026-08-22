@@ -43,7 +43,10 @@
 - [x] Add an /admin cover-image upload control that stores the selected image and saves its URL to the product listing.
 - [x] Add a product pricing mode that supports free resources alongside paid PayPal products.
 - [x] Add secure free-download access for published listings with an attached file and a zero price.
-- [ ] Verify cover image uploads and free downloads on the public product page.
+- [x] Verify free downloads on the public product page.
+- [x] Upload one cover image through /admin and confirm it renders on the corresponding public product page.
+- [x] Add regression coverage for admin cover-upload access control.
+- [x] Change free PDF and other resource links to download files automatically instead of opening them in the browser.
 - [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
 - [x] Verify the revised Ehode title on desktop and mobile headers.
 - [ ] Verify the protected buyer download page after completing the PayPal Sandbox approval.

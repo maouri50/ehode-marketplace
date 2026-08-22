@@ -1,0 +1,210 @@
+import { TRPCError } from "@trpc/server";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets, shops } from "../../drizzle/schema";
+import { getDb } from "../db";
+import { capturePayPalOrder, createPayPalOrder } from "../paypal";
+import { storageGetSignedUrl, storagePut } from "../storage";
+import { adminProcedure, publicProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
+
+const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
+const activeListing = eq(marketplaceListings.status, "published");
+
+function money(value: string | number) {
+  return Number(value).toFixed(2);
+}
+
+async function requireDb() {
+  const db = await getDb();
+  if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "The catalog database is unavailable." });
+  return db;
+}
+
+export const storefrontRouter = router({
+  catalog: router({
+    list: publicProcedure.input(z.object({ category: z.string().optional(), query: z.string().max(120).optional() }).optional()).query(async ({ input }) => {
+      const db = await requireDb();
+      const rows = await db.select({
+        id: marketplaceListings.id,
+        handle: marketplaceListings.handle,
+        title: marketplaceListings.title,
+        description: marketplaceListings.description,
+        productType: marketplaceListings.productType,
+        priceAmount: marketplaceListings.priceAmount,
+        currencyCode: marketplaceListings.currencyCode,
+        coverImageUrl: marketplaceListings.coverImageUrl,
+        licenseName: marketplaceListings.licenseName,
+        featured: marketplaceListings.featured,
+        category: catalogCategories.name,
+        categoryHandle: catalogCategories.handle,
+        assetCount: count(productAssets.id),
+      }).from(marketplaceListings)
+        .leftJoin(catalogCategories, eq(marketplaceListings.categoryId, catalogCategories.id))
+        .leftJoin(productAssets, eq(productAssets.listingId, marketplaceListings.id))
+        .where(activeListing)
+        .groupBy(marketplaceListings.id, catalogCategories.id)
+        .orderBy(desc(marketplaceListings.featured), asc(marketplaceListings.title));
+
+      const query = input?.query?.trim().toLowerCase();
+      return rows.filter((row) => {
+        if (input?.category && row.categoryHandle !== input.category) return false;
+        if (!query) return true;
+        return `${row.title} ${row.description ?? ""} ${row.productType ?? ""} ${row.category ?? ""}`.toLowerCase().includes(query);
+      });
+    }),
+    byHandle: publicProcedure.input(z.object({ handle: z.string().min(1).max(255) })).query(async ({ input }) => {
+      const db = await requireDb();
+      const rows = await db.select({
+        id: marketplaceListings.id,
+        handle: marketplaceListings.handle,
+        title: marketplaceListings.title,
+        description: marketplaceListings.description,
+        productType: marketplaceListings.productType,
+        priceAmount: marketplaceListings.priceAmount,
+        currencyCode: marketplaceListings.currencyCode,
+        coverImageUrl: marketplaceListings.coverImageUrl,
+        licenseName: marketplaceListings.licenseName,
+        category: catalogCategories.name,
+        assetCount: count(productAssets.id),
+      }).from(marketplaceListings)
+        .leftJoin(catalogCategories, eq(marketplaceListings.categoryId, catalogCategories.id))
+        .leftJoin(productAssets, eq(productAssets.listingId, marketplaceListings.id))
+        .where(and(activeListing, eq(marketplaceListings.handle, input.handle)))
+        .groupBy(marketplaceListings.id, catalogCategories.id)
+        .limit(1);
+      return rows[0] ?? null;
+    }),
+    categories: publicProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select().from(catalogCategories).where(eq(catalogCategories.isActive, 1)).orderBy(asc(catalogCategories.sortOrder));
+    }),
+  }),
+  paypal: router({
+    config: publicProcedure.query(() => ({ clientId: ENV.paypalClientId, mode: ENV.paypalMode })),
+    createOrder: publicProcedure.input(z.object({ items: z.array(cartInput).min(1).max(20) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const ids = Array.from(new Set(input.items.map((item) => item.listingId)));
+      const listings = await db.select({
+        id: marketplaceListings.id,
+        title: marketplaceListings.title,
+        priceAmount: marketplaceListings.priceAmount,
+        currencyCode: marketplaceListings.currencyCode,
+        status: marketplaceListings.status,
+        assetCount: count(productAssets.id),
+      }).from(marketplaceListings).leftJoin(productAssets, eq(productAssets.listingId, marketplaceListings.id))
+        .where(inArray(marketplaceListings.id, ids)).groupBy(marketplaceListings.id);
+
+      if (listings.length !== ids.length || listings.some((listing) => listing.status !== "published")) throw new TRPCError({ code: "BAD_REQUEST", message: "One of the selected products is no longer available." });
+      if (listings.some((listing) => listing.assetCount === 0)) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "A selected product is still being prepared for delivery." });
+
+      const currencyCode = listings[0]?.currencyCode ?? "USD";
+      if (listings.some((listing) => listing.currencyCode !== currencyCode)) throw new TRPCError({ code: "BAD_REQUEST", message: "Products must use the same currency at checkout." });
+      const quantityById = new Map(input.items.map((item) => [item.listingId, item.quantity]));
+      const total = listings.reduce((sum, listing) => sum + Number(listing.priceAmount) * (quantityById.get(listing.id) ?? 1), 0);
+      const referenceId = input.items.map((item) => `${item.listingId}:${item.quantity}`).join(",");
+      const order = await createPayPalOrder({ referenceId, description: listings.length === 1 ? listings[0]!.title : `${listings.length} digital resources from Ehode`, amount: money(total), currencyCode });
+      return { id: order.id };
+    }),
+    captureOrder: publicProcedure.input(z.object({ paypalOrderId: z.string().min(3).max(255) })).mutation(async ({ input, ctx }) => {
+      const db = await requireDb();
+      const captured = await capturePayPalOrder(input.paypalOrderId);
+      const referenceId = captured.purchase_units?.[0]?.reference_id ?? "";
+      const items = referenceId.split(",").map((part) => { const [id, quantity] = part.split(":"); return { listingId: Number(id), quantity: Number(quantity) || 1 }; }).filter((item) => Number.isInteger(item.listingId) && item.listingId > 0);
+      if (!items.length) throw new TRPCError({ code: "BAD_REQUEST", message: "The completed order did not contain a valid product reference." });
+      const listingIds = Array.from(new Set(items.map((item) => item.listingId)));
+      const listings = await db.select().from(marketplaceListings).where(inArray(marketplaceListings.id, listingIds));
+      if (listings.length !== listingIds.length) throw new TRPCError({ code: "BAD_REQUEST", message: "The completed order references an unavailable product." });
+      const paidAmount = captured.purchase_units?.reduce((sum, unit) => sum + Number(unit.payments?.captures?.[0]?.amount?.value ?? unit.amount?.value ?? 0), 0) ?? 0;
+      const currencyCode = captured.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.currency_code ?? captured.purchase_units?.[0]?.amount?.currency_code ?? listings[0]!.currencyCode;
+      const existing = await db.select().from(marketplaceOrders).where(eq(marketplaceOrders.paymentOrderId, input.paypalOrderId)).limit(1);
+      if (existing[0]) return { orderId: existing[0].id, receiptToken: existing[0].receiptToken, alreadyCaptured: true };
+      const receiptToken = nanoid(40);
+      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: captured.payer?.email_address ?? null, currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
+      const orderId = Number((insertedOrder as any)[0]?.insertId);
+      for (const item of items) {
+        const listing = listings.find((candidate) => candidate.id === item.listingId)!;
+        const insertedItem = await db.insert(marketplaceOrderItems).values({ orderId, listingId: listing.id, paymentLineItemRef: String(listing.id), title: listing.title, quantity: item.quantity, unitPrice: listing.priceAmount });
+        const orderItemId = Number((insertedItem as any)[0]?.insertId);
+        const assets = await db.select().from(productAssets).where(eq(productAssets.listingId, listing.id));
+        for (const asset of assets) await db.insert(downloadGrants).values({ orderItemId, assetId: asset.id, accessToken: nanoid(40) });
+      }
+      return { orderId, receiptToken, alreadyCaptured: false };
+    }),
+  }),
+  downloads: router({
+    byReceipt: publicProcedure.input(z.object({ receiptToken: z.string().min(20).max(128) })).query(async ({ input }) => {
+      const db = await requireDb();
+      const order = await db.select().from(marketplaceOrders).where(eq(marketplaceOrders.receiptToken, input.receiptToken)).limit(1);
+      if (!order[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Order not found." });
+      const rows = await db.select({ grant: downloadGrants, asset: productAssets, item: marketplaceOrderItems }).from(downloadGrants)
+        .innerJoin(marketplaceOrderItems, eq(downloadGrants.orderItemId, marketplaceOrderItems.id))
+        .innerJoin(productAssets, eq(downloadGrants.assetId, productAssets.id))
+        .where(eq(marketplaceOrderItems.orderId, order[0].id));
+      return rows.map(({ grant, asset, item }) => ({ token: grant.accessToken, title: item.title, filename: asset.originalFilename, downloadCount: grant.downloadCount }));
+    }),
+    resolve: publicProcedure.input(z.object({ token: z.string().min(20).max(128) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const rows = await db.select({ grant: downloadGrants, asset: productAssets }).from(downloadGrants).innerJoin(productAssets, eq(downloadGrants.assetId, productAssets.id)).where(eq(downloadGrants.accessToken, input.token)).limit(1);
+      const row = rows[0];
+      if (!row || (row.grant.expiresAt && row.grant.expiresAt < new Date())) throw new TRPCError({ code: "NOT_FOUND", message: "Download access is unavailable." });
+      await db.update(downloadGrants).set({ downloadCount: row.grant.downloadCount + 1 }).where(eq(downloadGrants.id, row.grant.id));
+      return { url: await storageGetSignedUrl(row.asset.storageKey), filename: row.asset.originalFilename };
+    }),
+  }),
+  owner: router({
+    orders: adminProcedure.query(async () => {
+      const db = await requireDb();
+      const orders = await db.select().from(marketplaceOrders).orderBy(desc(marketplaceOrders.createdAt)).limit(30);
+      if (!orders.length) return [];
+      const orderIds = orders.map((order) => order.id);
+      const items = await db.select().from(marketplaceOrderItems).where(inArray(marketplaceOrderItems.orderId, orderIds));
+      const orderItemIds = items.map((item) => item.id);
+      const grants = orderItemIds.length ? await db.select().from(downloadGrants).where(inArray(downloadGrants.orderItemId, orderItemIds)) : [];
+      return orders.map((order) => {
+        const orderItems = items.filter((item) => item.orderId === order.id);
+        const grantCount = grants.filter((grant) => orderItems.some((item) => item.id === grant.orderItemId)).length;
+        return { order, itemCount: orderItems.length, grantCount };
+      });
+    }),
+    listings: adminProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select({ listing: marketplaceListings, category: catalogCategories, assetCount: count(productAssets.id) }).from(marketplaceListings)
+        .leftJoin(catalogCategories, eq(marketplaceListings.categoryId, catalogCategories.id)).leftJoin(productAssets, eq(productAssets.listingId, marketplaceListings.id))
+        .groupBy(marketplaceListings.id, catalogCategories.id).orderBy(desc(marketplaceListings.updatedAt));
+    }),
+    createListing: adminProcedure.input(z.object({ title: z.string().min(3).max(255), description: z.string().max(8000).optional(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3).default("USD"), productType: z.string().max(120).optional(), categoryId: z.number().int().positive().optional(), coverImageUrl: z.string().url().optional(), licenseName: z.string().max(160).optional() })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const shop = await db.select({ id: shops.id }).from(shops).where(eq(shops.status, "active")).limit(1);
+      if (!shop[0]) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Create an active shop before adding products." });
+      const handle = `${input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 100) || "resource"}-${nanoid(6).toLowerCase()}`;
+      const externalProductId = `ehode-${nanoid(14)}`;
+      await db.insert(marketplaceListings).values({ shopId: shop[0].id, categoryId: input.categoryId ?? null, externalProductId, handle, title: input.title, description: input.description ?? null, productType: input.productType ?? null, priceAmount: money(input.priceAmount), currencyCode: input.currencyCode.toUpperCase(), coverImageUrl: input.coverImageUrl ?? null, licenseName: input.licenseName ?? null, status: "draft", isDigital: 1, featured: 0 });
+      return { success: true };
+    }),
+    updateListing: adminProcedure.input(z.object({ listingId: z.number().int().positive(), title: z.string().min(3).max(255), description: z.string().max(8000).nullable(), priceAmount: z.string().regex(/^\d+(\.\d{1,2})?$/), currencyCode: z.string().length(3), productType: z.string().max(120).nullable(), categoryId: z.number().int().positive().nullable(), coverImageUrl: z.string().url().nullable(), licenseName: z.string().max(160).nullable() })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      await db.update(marketplaceListings).set({ title: input.title, description: input.description, priceAmount: money(input.priceAmount), currencyCode: input.currencyCode.toUpperCase(), productType: input.productType, categoryId: input.categoryId, coverImageUrl: input.coverImageUrl, licenseName: input.licenseName }).where(eq(marketplaceListings.id, input.listingId));
+      return { success: true };
+    }),
+    uploadAsset: adminProcedure.input(z.object({ listingId: z.number().int().positive(), originalFilename: z.string().min(1).max(255), mimeType: z.string().min(1).max(120), base64Data: z.string().min(16).max(30_000_000) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const listing = await db.select().from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
+      if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
+      const data = Buffer.from(input.base64Data, "base64");
+      const uploaded = await storagePut(`product-files/${input.listingId}/${input.originalFilename}`, data, input.mimeType);
+      await db.insert(productAssets).values({ listingId: input.listingId, storageKey: uploaded.key, originalFilename: input.originalFilename, mimeType: input.mimeType });
+      return { success: true };
+    }),
+    setStatus: adminProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      if (input.status === "published") {
+        const assets = await db.select({ value: count() }).from(productAssets).where(eq(productAssets.listingId, input.listingId));
+        if ((assets[0]?.value ?? 0) === 0) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Upload a digital file before publishing this listing." });
+      }
+      await db.update(marketplaceListings).set({ status: input.status }).where(eq(marketplaceListings.id, input.listingId));
+      return { success: true };
+    }),
+  }),
+});

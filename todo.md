@@ -1,0 +1,29 @@
+# Project TODO
+
+- [x] Define single-seller marketplace schema with future-ready seller, shop, listing, commission, and review relations.
+- [x] Shopify was provisioned for the initial preview and then removed from the active customer launch path.
+- [x] Seed no more than two original demonstration products for the first storefront preview.
+- [x] Verify that the live catalog is available through the storefront integration before binding the UI to it.
+- [x] Apply the database migration for products, categories, product assets, orders, order items, and download grants.
+- [x] Build an elegant, responsive public storefront with collections, search, featured products, and category browsing.
+- [x] Build product detail pages with product previews, licensing information, price, and cart actions.
+- [x] Build a mobile-friendly cart and secure PayPal purchase flow for available digital products.
+- [x] Build an owner-only dashboard for creating, editing, uploading, publishing, and reviewing first-party product operations.
+- [x] Build owner order records and order-linked digital download access.
+- [x] Replace the Shopify storefront checkout with a PayPal-only checkout flow for the single-seller launch.
+- [x] Add secure PayPal order creation, capture verification, and order persistence.
+- [x] Add a buyer download library with access granted only after verified PayPal capture.
+- [x] Configure PayPal sandbox credentials through secure environment variables and verify the OAuth connection.
+- [x] Audit the existing GitHub PayPal implementation and exclude all credentials, tokens, and customer data.
+- [x] Adapt only the safe PayPal checkout structure from the existing repository into the new store.
+- [x] Replace the remaining Shopify customer checkout and catalog dependencies with the PayPal-backed product flow.
+- [x] Keep vendor registration, vendor storefront creation, commissions, payouts, and buyer reviews disabled in the launch UI while retaining expansion-ready data structures.
+- [x] Supersede Shopify order synchronization with verified PayPal capture and purchase-linked download grants.
+- [x] Remove Shopify-specific customer checkout and catalog dependencies from the public launch experience.
+- [x] Add tests for catalog search and protected download access.
+- [x] Add a test for owner-only dashboard access.
+- [x] Verify desktop and mobile storefront layouts, database-backed workflows, and production build.
+- [x] Document the marketplace expansion path and deployment prerequisites.
+- [ ] Upload the final digital file for each product in the owner workspace, then publish the listing.
+- [ ] Complete one sandbox purchase after an asset is attached and confirm the buyer download page.
+- [ ] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.

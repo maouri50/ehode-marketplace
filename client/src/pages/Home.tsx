@@ -1,33 +1,17 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { CartDrawer } from "@/components/CartDrawer";
+import { ProductCard } from "@/components/ProductCard";
+import { StoreHeader } from "@/components/StoreHeader";
+import { trpc } from "@/lib/trpc";
+import { ArrowDown, ArrowUpRight, Check, Download, Search, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "wouter";
+const heroImage = "/manus-storage/pink-creative-workspace_66189688.jpeg";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // The useAuth hook provides authentication state.
-  // To implement login/logout, call logout(), or start login from an event
-  // handler: onClick={() => startLogin()} (imported from "@/const"). Never call
-  // startLogin() during render (no href={startLogin()}) — it mints a one-time
-  // nonce cookie and must run only at the moment of navigation.
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  const { data: products = [], isLoading, error } = trpc.storefront.catalog.list.useQuery();
+  const { data: categories = [] } = trpc.storefront.catalog.categories.useQuery();
+  const [query, setQuery] = useState(""); const [category, setCategory] = useState<string | null>(null);
+  const visible = useMemo(() => products.filter((product) => (!category || product.categoryHandle === category) && `${product.title} ${product.description ?? ""} ${product.category ?? ""}`.toLowerCase().includes(query.toLowerCase())), [products, category, query]);
+  const featured = products.find((product) => product.featured) ?? products[0];
+  return <div className="store-page"><StoreHeader /><main><section className="hero-section"><div className="hero-section__mesh" aria-hidden="true"/><div className="container hero-section__grid"><div className="hero-section__content"><div className="hero-kicker"><Sparkles size={15}/> A slower kind of digital</div><h1>Small tools for <em>beautifully</em> finished work.</h1><p>Printable templates and design bundles made for creative work that deserves more room to breathe.</p><div className="hero-section__actions"><a className="primary-action" href="#collection">Explore the collection <ArrowDown size={17}/></a><a className="quiet-action" href="#how-it-works">How it works <ArrowUpRight size={16}/></a></div><div className="hero-trust"><span><Check size={14}/> Pay securely with PayPal</span><span><Check size={14}/> Download after purchase</span><span><Check size={14}/> Made by one studio</span></div></div><div className="hero-section__visual"><div className="hero-image-frame"><img src={heroImage} alt="A warm creative workspace with stationery"/></div><div className="hero-caption hero-caption--left">Created for unhurried ideas</div><div className="hero-caption hero-caption--right">Independent. Carefully curated.</div></div></div></section><section className="category-strip" aria-label="Shop by category"><div className="container category-strip__inner"><span className="category-strip__label">Shop by category</span>{categories.map((item) => <button key={item.id} type="button" onClick={() => { setCategory(item.handle); setQuery(""); document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" }); }}><span>{item.name}</span><small>{item.description}</small><ArrowUpRight size={16}/></button>)}</div></section><section className="collection-section container" id="collection"><div className="section-heading"><div><span className="eyebrow">The collection</span><h2>Find your next good thing.</h2></div><p>Useful downloads, chosen with a point of view.</p></div><div className="collection-controls"><label className="search-field"><Search size={17}/><span className="sr-only">Search the collection</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search resources"/></label><div className="tag-row"><button type="button" className={!category ? "is-active" : ""} onClick={() => setCategory(null)}>All</button>{categories.map((item) => <button type="button" className={category === item.handle ? "is-active" : ""} onClick={() => setCategory(item.handle)} key={item.id}>{item.name}</button>)}</div></div>{featured ? <Link href={`/products/${featured.handle}`} className="featured-resource"><div className="featured-resource__image">{featured.coverImageUrl ? <img src={featured.coverImageUrl} alt={featured.title}/> : null}</div><div><span className="eyebrow">Featured resource</span><h3>{featured.title}</h3><p>{featured.description}</p><span className="quiet-action">View the details <ArrowUpRight size={16}/></span></div></Link> : null}{isLoading ? <div className="product-grid product-grid--skeleton"><div/><div/><div/></div> : null}{error ? <div className="catalog-state"><h3>The collection is taking a moment.</h3><p>Please refresh to try again.</p></div> : null}{!isLoading && !error && visible.length === 0 ? <div className="catalog-state"><h3>Nothing matches that search yet.</h3><button type="button" onClick={() => { setQuery(""); setCategory(null); }}>Show everything</button></div> : null}{visible.length > 0 ? <div className="product-grid">{visible.map((product) => <ProductCard key={product.id} product={product}/>)}</div> : null}</section><section className="process-section" id="how-it-works"><div className="container process-section__grid"><div><span className="eyebrow">Made simple</span><h2>Choose it. Pay safely. Make it yours.</h2></div><ol><li><span>01</span><div><strong>Choose a resource</strong><p>Browse printable templates and digital design bundles.</p></div></li><li><span>02</span><div><strong>Pay with PayPal</strong><p>Checkout is completed through your PayPal account or card flow.</p></div></li><li><span>03</span><div><strong>Download when ready</strong><p>Secure access is created once PayPal confirms the payment.</p></div></li></ol></div></section><section className="about-section container" id="about"><div className="about-section__panel"><span className="eyebrow">The studio</span><h2>Digital pieces with a little more intention.</h2><p>Ehode begins as an independent one-seller studio. Every resource is prepared and supported from one place — a focused shop designed to grow carefully over time.</p><Link href="/owner" className="quiet-action">Owner workspace <ArrowUpRight size={16}/></Link></div><div className="about-section__aside"><Download size={22}/><strong>Built for digital delivery</strong><span>Files become available only after verified payment, using purchase-linked download access.</span></div></section></main><footer className="store-footer"><div className="container"><span className="store-brand">ehode<span>.</span></span><p>Thoughtful digital resources for a more considered creative life.</p><small>© {new Date().getFullYear()} Ehode. Independent digital goods.</small></div></footer><CartDrawer /></div>;
 }

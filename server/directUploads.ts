@@ -3,7 +3,10 @@ import type { Express, Request, Response } from "express";
 import { generateClientTokenFromReadWriteToken } from "@vercel/blob/client";
 import { hasAdminSession } from "./adminAuth";
 
-const MAX_RESOURCE_BYTES = 250 * 1024 * 1024;
+// Vercel Blob client uploads can support objects up to 5 TB. Resource uploads
+// stream directly from the browser to Blob, so they never pass through the
+// Vercel Function request-body limit that caused the prior 413 response.
+const MAX_RESOURCE_BYTES = 5 * 1024 * 1024 * 1024 * 1024;
 const MAX_COVER_BYTES = 12 * 1024 * 1024;
 
 function safeFilename(name: string) {
@@ -33,7 +36,7 @@ export function registerDirectUploadRoutes(app: Express) {
     }
     if (kind === "cover" && !/^image\/(png|jpeg|webp|gif)$/.test(mimeType)) return res.status(400).json({ error: "Use a PNG, JPG, WEBP, or GIF cover image." });
     const maximumSizeInBytes = kind === "cover" ? MAX_COVER_BYTES : MAX_RESOURCE_BYTES;
-    if (size > maximumSizeInBytes) return res.status(413).json({ error: kind === "cover" ? "Cover images must be under 12 MB." : "Resource files must be under 250 MB." });
+    if (size > maximumSizeInBytes) return res.status(413).json({ error: kind === "cover" ? "Cover images must be under 12 MB." : "Resource files exceed the storage provider's 5 TB per-file limit." });
 
     try {
       const pathname = createUploadPath(listingId, kind, filename);

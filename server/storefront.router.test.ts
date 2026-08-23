@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import { resolveBuyerEmail } from "./routers/storefront";
 
 function anonymousContext(): TrpcContext {
   return { user: null, req: { protocol: "https", headers: {} } as TrpcContext["req"], res: {} as TrpcContext["res"] };
@@ -55,5 +56,11 @@ describe("PayPal storefront catalog", () => {
       items: [{ listingId: 5, quantity: 1 }],
       buyerEmail: "not-an-email",
     })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("uses the verified PayPal payer email only when checkout email is absent during capture", () => {
+    expect(resolveBuyerEmail("buyer@example.com", "payer@example.com")).toBe("buyer@example.com");
+    expect(resolveBuyerEmail(undefined, "Payer@Example.com ")).toBe("payer@example.com");
+    expect(resolveBuyerEmail(null, undefined)).toBeNull();
   });
 });

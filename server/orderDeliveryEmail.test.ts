@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildOrderReceiptEmail } from "./orderDeliveryEmail";
+import { buildOrderReceiptEmail, didClaimPendingDelivery } from "./orderDeliveryEmail";
 
 describe("order delivery email", () => {
   it("creates a transactional receipt message with the protected receipt URL and escaped titles", () => {
@@ -8,5 +8,13 @@ describe("order delivery email", () => {
     expect(message.text).toContain("https://www.ehode.com/downloads/secure-token");
     expect(message.html).toContain("Planner &lt;2026&gt;");
     expect(message.html).toContain("Keep this link private");
+  });
+
+  it("requires an atomic pending-status claim before allowing a delivery send", () => {
+    expect(didClaimPendingDelivery({ affectedRows: 1 })).toBe(true);
+    expect(didClaimPendingDelivery([{ affectedRows: 1 }])).toBe(true);
+    expect(didClaimPendingDelivery({ affectedRows: 0 })).toBe(false);
+    expect(didClaimPendingDelivery({ rowsAffected: 0 })).toBe(false);
+    expect(didClaimPendingDelivery(undefined)).toBe(false);
   });
 });

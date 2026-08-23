@@ -122,6 +122,8 @@
 - [ ] Remove the unwanted black scribble decoration from the homepage hero artwork and verify the responsive hero presentation.
 - [x] Generate twenty distinct Ehode homepage visual concepts for the owner to choose a complete website direction.
 - [x] Deliver all twenty standalone homepage concept images with numbered direction names for the owner to select or combine.
+- [x] Apply the selected Optimistic Orange visual direction to the real homepage while retaining catalog search, categories, cart, checkout, and downloads.
+- [x] Re-verify the selected homepage redesign from a clean cart state: record add-to-bag, free-download, and actual mobile-viewport basket evidence.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

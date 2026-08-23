@@ -101,6 +101,7 @@
 - [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.
 - [ ] Allow PDF and other valid digital resource MIME types in the presigned Blob upload flow.
 - [ ] Diagnose and fix the reported free-resource download failure on the live storefront.
+- [ ] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
 - [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.
 - [x] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.

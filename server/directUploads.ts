@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import type { Express, Request, Response } from "express";
-import { generateClientTokenFromReadWriteToken } from "@vercel/blob/client";
+import { issueSignedToken } from "@vercel/blob";
+import { handleUploadPresigned, type HandleUploadPresignedBody } from "@vercel/blob/client";
 import { hasAdminSession } from "./adminAuth";
 
 // Vercel Blob client uploads can support objects up to 5 TB. Resource uploads
@@ -27,32 +28,52 @@ export function createUploadPath(listingId: number, kind: "file" | "cover", file
 export function registerDirectUploadRoutes(app: Express) {
   app.post("/api/blob-upload/token", async (req: Request, res: Response) => {
     if (!hasAdminSession(req as any)) return res.status(401).json({ error: "Admin sign-in is required." });
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!token) return res.status(503).json({ error: "External file storage is not connected." });
-
-    const { listingId, kind, filename, mimeType, size } = req.body ?? {};
-    if (!Number.isInteger(listingId) || listingId <= 0 || (kind !== "file" && kind !== "cover") || typeof filename !== "string" || !filename.trim() || typeof mimeType !== "string" || !Number.isFinite(size) || size <= 0) {
-      return res.status(400).json({ error: "Invalid upload request." });
-    }
-    if (kind === "cover" && !/^image\/(png|jpeg|webp|gif)$/.test(mimeType)) return res.status(400).json({ error: "Use a PNG, JPG, WEBP, or GIF cover image." });
-    const maximumSizeInBytes = kind === "cover" ? MAX_COVER_BYTES : MAX_RESOURCE_BYTES;
-    if (size > maximumSizeInBytes) return res.status(413).json({ error: kind === "cover" ? "Cover images must be under 12 MB." : "Resource files exceed the storage provider's 5 TB per-file limit." });
-
     try {
-      const pathname = createUploadPath(listingId, kind, filename);
-      const clientToken = await generateClientTokenFromReadWriteToken({
-        token,
-        pathname,
-        maximumSizeInBytes,
-        allowedContentTypes: kind === "cover" ? ["image/png", "image/jpeg", "image/webp", "image/gif"] : ["*/*"],
-        validUntil: Date.now() + 15 * 60 * 1000,
-        addRandomSuffix: false,
-        allowOverwrite: false,
+      const response = await handleUploadPresigned({
+        body: req.body as HandleUploadPresignedBody,
+        request: req,
+        getSignedToken: async (pathname, clientPayload) => {
+          const payload = parseUploadPayload(clientPayload);
+          const prefix = payload.kind === "cover" ? `product-covers/${payload.listingId}/` : `product-files/${payload.listingId}/`;
+          if (!pathname.startsWith(prefix) || pathname.slice(prefix.length).includes("/") || pathname.includes("..")) throw new Error("Invalid upload destination.");
+
+          const maximumSizeInBytes = payload.kind === "cover" ? MAX_COVER_BYTES : MAX_RESOURCE_BYTES;
+          if (payload.size > maximumSizeInBytes) throw new Error(payload.kind === "cover" ? "Cover images must be under 12 MB." : "Resource files exceed the storage provider's 5 TB per-file limit.");
+          const allowedContentTypes = payload.kind === "cover" ? ["image/png", "image/jpeg", "image/webp", "image/gif"] : ["*/*"];
+          if (payload.kind === "cover" && !/^image\/(png|jpeg|webp|gif)$/.test(payload.mimeType)) throw new Error("Use a PNG, JPG, WEBP, or GIF cover image.");
+
+          const token = await issueSignedToken({
+            pathname,
+            operations: ["put"],
+            allowedContentTypes,
+            maximumSizeInBytes,
+            validUntil: Date.now() + 15 * 60 * 1000,
+          });
+          return {
+            token,
+            urlOptions: {
+              allowedContentTypes,
+              maximumSizeInBytes,
+              validUntil: Date.now() + 15 * 60 * 1000,
+              addRandomSuffix: false,
+              allowOverwrite: false,
+            },
+          };
+        },
       });
-      return res.status(200).json({ token: clientToken, pathname });
+      return res.status(200).json(response);
     } catch (error) {
-      console.error("[Direct upload] Failed to issue client token", error);
-      return res.status(500).json({ error: "Could not prepare secure file upload." });
+      const message = error instanceof Error ? error.message : "Could not prepare secure file upload.";
+      console.error("[Direct upload] Failed to issue presigned URL", error);
+      return res.status(message.includes("Admin sign-in") ? 401 : 400).json({ error: message });
     }
   });
+}
+
+function parseUploadPayload(value: string | null) {
+  let parsed: unknown;
+  try { parsed = JSON.parse(value ?? ""); } catch { throw new Error("Invalid upload request."); }
+  const payload = parsed as { listingId?: unknown; kind?: unknown; mimeType?: unknown; size?: unknown };
+  if (!Number.isInteger(payload.listingId) || (payload.listingId as number) <= 0 || (payload.kind !== "file" && payload.kind !== "cover") || typeof payload.mimeType !== "string" || !Number.isFinite(payload.size) || (payload.size as number) <= 0) throw new Error("Invalid upload request.");
+  return { listingId: payload.listingId as number, kind: payload.kind, mimeType: payload.mimeType, size: payload.size as number } as { listingId: number; kind: "file" | "cover"; mimeType: string; size: number };
 }

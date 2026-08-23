@@ -135,8 +135,9 @@
 - [x] Add a database-adapter test that proves the real owner draft path records active subscriber count and creates no delivery rows or provider calls.
 - [x] Exercise the real database campaign adapter with mixed active/unsubscribed subscribers and a mocked mailer, confirming only active delivery rows persist.
 - [ ] Publish the verified release checkpoint to ehode.com through the owner-facing Publish control, then confirm the live newsletter campaign changes.
-- [ ] Push the verified newsletter-campaign release to a non-production GitHub branch without triggering a production deployment.
+- [x] Push the verified newsletter-campaign release to a non-production GitHub branch without triggering a production deployment.
 - [ ] Verify the release branch contents and provide the owner the exact manual Vercel deployment step for ehode.com.
+- [ ] Fix the Vercel TypeScript build error in the protected download handler, validate the release build, and update the newsletter release branch.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

@@ -32,11 +32,13 @@ export function registerPaidDownloadRoutes(app: Express) {
         .where(eq(downloadGrants.id, row.grant.id));
 
       const filename = safeAttachmentName(row.asset.originalFilename);
-      res.setHeader("Content-Type", row.asset.mimeType || stored.contentType || "application/octet-stream");
-      res.setHeader("Content-Length", String(stored.bytes.length));
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
-      res.setHeader("Cache-Control", "private, no-store");
-      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.set({
+        "Content-Type": row.asset.mimeType || stored.contentType || "application/octet-stream",
+        "Content-Length": String(stored.bytes.length),
+        "Content-Disposition": `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+      });
       return res.status(200).send(stored.bytes);
     } catch (error) {
       console.error("[Paid download] Failed to serve attachment", error);

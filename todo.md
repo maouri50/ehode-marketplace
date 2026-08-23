@@ -94,9 +94,24 @@
 - [ ] Verify the live homepage and catalog API return published products rather than an empty result.
 - [x] Publish the TiDB TLS database-client update to GitHub before redeploying the Vercel API.
 - [x] Replace managed storage paths with an external object-storage integration for new private covers and protected download files.
-- [ ] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
+- [x] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
 - [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
 - [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
 - [ ] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
-- [ ] Fix the admin attach-file and cover-upload controls so file selection and upload feedback are reliable.
-- [ ] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
+- [x] Diagnose and fix the live basket message that reports PayPal is not configured.
+- [ ] Verify a real published paid product with an attached asset can be added through the normal UI, then confirm PayPal Live controls render after a valid receipt email without opening or approving a payment.
+- [ ] Verify the protected purchased-resource download URL and receipt page after a confirmed PayPal order without capturing a new payment.
+- [ ] Add a transactional buyer email that sends the protected download-receipt link only after PayPal confirms payment.
+- [ ] Add delivery-status logging and duplicate-send protection for payment-confirmed email notifications.
+- [x] Diagnose and fix the preview tRPC request that returns HTML instead of JSON at /?from_webdev=1.
+- [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.
+- [ ] Allow PDF and other valid digital resource MIME types in the presigned Blob upload flow.
+- [ ] Capture direct route evidence that the live product-page Download free click triggers the expected attachment download.
+- [ ] Verify the live free-listing download procedure returns the persisted attachment target after the storage and route changes.
+- [ ] Verify the downloaded file matches the attached asset for the published free listing.
+- [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
+- [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
+- [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
+- [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.
+- [x] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.
+- [x] Add the explicit nested Vercel Blob-upload route so the secure direct-upload token request reaches the API function.

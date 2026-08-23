@@ -52,11 +52,11 @@
 - [ ] After the first completed PayPal Live sale, verify the protected receipt page, signed file link, and delivered download end-to-end.
 - [ ] Record the post-launch PayPal order and protected-download verification result.
 - [ ] Diagnose and fix the PayPal Live approval window that opens briefly and closes before the buyer can approve payment.
-- [ ] Require a buyer email before paid PayPal checkout and explain that it is used for the order record and delivery access.
-- [ ] Persist the buyer-supplied email with the verified PayPal order, falling back to the PayPal payer email only when needed.
-- [ ] Display buyer email addresses only in the password-protected /admin order history.
+- [x] Require a buyer email before paid PayPal checkout and explain that it is used for the order record and delivery access.
+- [x] Add a capture-order regression that verifies a missing buyer email persists the verified PayPal payer email, while a supplied buyer email takes precedence.
+- [x] Display buyer email addresses only in the password-protected /admin order history.
 - [ ] Add regression coverage for email validation, order capture, and private admin access to buyer email data.
-- [ ] Refine the buyer email and PayPal area so the cart keeps a compact, visually consistent checkout layout.
+- [ ] Verify the compact buyer-email and PayPal checkout layout on desktop and mobile before marking the visual refinement complete.
 - [x] Diagnose and fix the root-page tRPC request that returns HTML instead of JSON when opened with from_webdev=1.
 - [x] Verify public catalog, category, and checkout configuration tRPC responses return valid JSON after the fix.
 - [x] Package the complete source code for GitHub handoff without environment secrets, local dependencies, generated builds, or development logs.
@@ -96,4 +96,5 @@
 - [x] Replace managed storage paths with an external object-storage integration for new private covers and protected download files.
 - [ ] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
 - [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
-- [ ] Configure production environment variables, validate standalone admin access, and perform a controlled pre-sale checkout verification on Vercel.
+- [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
+- [ ] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.

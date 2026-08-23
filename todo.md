@@ -103,6 +103,12 @@
 - [ ] Verify the protected purchased-resource download URL and receipt page after a confirmed PayPal order without capturing a new payment.
 - [ ] Add a transactional buyer email that sends the protected download-receipt link only after PayPal confirms payment.
 - [ ] Add delivery-status logging and duplicate-send protection for payment-confirmed email notifications.
+- [x] Wait for Resend to verify mail.ehode.com, then redeploy Vercel with the configured sender settings.
+- [ ] Send one owner-approved test email through the app’s delivery helper using a protected receipt/download URL shape, without capturing a payment.
+- [ ] Verify in the inbox or Resend logs that the received transactional email contains the correct protected receipt/download link.
+- [x] Verify that the owner receives the Resend sender-verification email from downloads@mail.ehode.com.
+- [ ] Redesign the confirmed-order download page with polished file cards, prominent download controls, and clear mobile hierarchy.
+- [ ] Verify the redesigned purchased-download page on desktop and phone layouts without changing protected access behavior.
 - [x] Diagnose and fix the preview tRPC request that returns HTML instead of JSON at /?from_webdev=1.
 - [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.
 - [ ] Allow PDF and other valid digital resource MIME types in the presigned Blob upload flow.

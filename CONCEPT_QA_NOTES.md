@@ -17,3 +17,11 @@ The mobile navigation basket control was then invoked directly in the browser an
 The basket was reset to zero items and the ready Baby Stroller product was added again; after the handler completed, the basket exposed `Open basket with 1 item`. A new free-resource PDF entry also appeared at the top of browser download history immediately after a separate free-download action, confirming a fresh attachment download. Finally, the actual 390 × 844 phone viewport was captured with the fixed Home, Browse, Search, and Basket navigation visible and unobstructed.
 
 An isolated Chromium session then applied an actual 390 × 844 mobile viewport and used the visible `.mobile-bottom-nav` Basket control. It was visible at that viewport, changed from `Open basket with 0 items`, and opened the cart drawer with a `Close basket` control. In the same phone-viewport run, the Free download control emitted a browser download event for `/api/download/free/30001/30001` with the suggested attachment filename `StudentDailyWeeklyAgendaCalendarEDITABLEGoogleSlidesTemplates20262027-1.pdf`. No payment approval or capture was initiated.
+
+## Restored-identity listing-grid check
+
+The Optimistic Orange treatment was removed from the rendered homepage. Desktop now uses the original Ehode neutral, serif-led visual identity with four larger image-led listing cards across the catalog. The 390 × 844 phone rendering keeps the same original colors and presents the listing cards in two columns with image-first hierarchy, product title, price, and action still visible.
+
+The restored-color catalog filter was also exercised after the layout change. Selecting SVG Design Bundles reduced the result count from ten to six matching listing cards without affecting the larger image-first card treatment or the surrounding page structure.
+
+Final interaction checks ran against the restored-identity version itself. Desktop search returned the single Sailboat result, and a ready listing updated the basket to `Open basket with 1 item`. At an actual 390 × 844 phone viewport, the final grid computed as two 168px columns with ten cards, the SVG filter reduced it to six cards, the visible mobile basket control opened the drawer, and the final free-download card emitted the expected `/api/download/free/30001/30001` attachment route.

@@ -575,3 +575,32 @@ a { color: inherit; }
 @media (max-width: 859px) {
   .optimistic-hero::before { width: 22px; }.optimistic-hero .marketplace-hero__grid { padding-top: 0; }.optimistic-hero__copy { padding-top: 2rem; padding-left: 1.1rem; }.optimistic-hero__copy::after { top: 0; bottom: 0; left: -1.25rem; width: 50px; border-radius: 0 0 30px 0; }.optimistic-hero h1 { font-size: clamp(3.5rem, 16vw, 4.8rem); }.optimistic-hero__showcase { min-height: 260px; margin: 0 -1.25rem; border-radius: 0; }.optimistic-hero__screen { right: 23%; }.optimistic-hero__resource { width: 21%; }.optimistic-page .marketplace-categories__row button { min-height: 41px; padding: .48rem .72rem; font-size: .68rem; }.optimistic-page .marketplace-product-card { padding: .35rem; border-radius: 10px; }.optimistic-page .marketplace-product-card:hover { box-shadow: none; transform: none; }.optimistic-page .mobile-bottom-nav { border-top-color: #ffc5ab; background: rgba(255, 248, 239, .97); }.optimistic-page .mobile-bottom-nav a.is-active, .optimistic-page .mobile-bottom-nav a:hover, .optimistic-page .mobile-bottom-nav button:hover { color: #d94b00; background: #ffe5d5; }
 }
+
+/* Listing-card layout inspired by the owner-approved reference: original identity, larger image-led cards. */
+.reference-listing-grid { gap: 2rem 1.15rem; }
+.reference-listing-grid .marketplace-product-card { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.reference-listing-grid .marketplace-product-card:hover { box-shadow: none; transform: none; }
+.reference-listing-grid .marketplace-product-card .product-card__image { aspect-ratio: 1 / 1.16; border-radius: 0; background: #f0ece6; }
+.reference-listing-grid .marketplace-product-card .product-card__image::after { position: absolute; top: .72rem; left: .72rem; padding: .34rem .45rem; background: rgba(255,253,249,.94); color: #61564e; content: "DIGITAL DOWNLOAD"; font-size: .52rem; font-weight: 900; letter-spacing: .08em; }
+.reference-listing-grid .marketplace-product-card .product-card__open { top: .65rem; right: .65rem; border-radius: 3px; }
+.reference-listing-grid .marketplace-product-card .product-card__content { padding: .85rem .05rem .05rem; }
+.reference-listing-grid .marketplace-product-card .product-card__type { margin-bottom: .34rem; color: #8a7a6e; font-size: .58rem; font-weight: 900; letter-spacing: .1em; }
+.reference-listing-grid .marketplace-product-card .product-card__title { min-height: 2.55rem; color: #2f2823; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(.98rem, 1.5vw, 1.25rem); font-weight: 600; line-height: 1.12; }
+.reference-listing-grid .marketplace-product-card .product-card__delivery { margin-top: .52rem; color: #76695e; font-size: .66rem; }
+.reference-listing-grid .marketplace-product-card .product-card__bottom { align-items: center; margin-top: .72rem; padding-top: .72rem; border-top: 1px solid #ebe4db; }
+.reference-listing-grid .marketplace-product-card .product-card__bottom > span { color: #a44755; font-size: .9rem; }
+.reference-listing-grid .marketplace-product-card .add-button { border-radius: 4px; }
+@media (min-width: 860px) { .reference-listing-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.2rem 1.25rem; } }
+@media (min-width: 1180px) { .reference-listing-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 859px) {
+  .reference-listing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.55rem .82rem; }
+  .reference-listing-grid .marketplace-product-card .product-card__image { aspect-ratio: 1 / 1.18; }
+  .reference-listing-grid .marketplace-product-card .product-card__image::after { top: .42rem; left: .42rem; padding: .24rem .3rem; font-size: .42rem; }
+  .reference-listing-grid .marketplace-product-card .product-card__content { padding-top: .58rem; }
+  .reference-listing-grid .marketplace-product-card .product-card__type { font-size: .5rem; }
+  .reference-listing-grid .marketplace-product-card .product-card__title { min-height: 2.7rem; font-size: .82rem; line-height: 1.2; }
+  .reference-listing-grid .marketplace-product-card .product-card__delivery { display: block; overflow: hidden; font-size: .55rem; white-space: nowrap; text-overflow: ellipsis; }
+  .reference-listing-grid .marketplace-product-card .product-card__bottom { flex-direction: column; align-items: stretch; gap: .5rem; margin-top: .52rem; padding-top: .52rem; }
+  .reference-listing-grid .marketplace-product-card .product-card__bottom > span { font-size: .8rem; }
+  .reference-listing-grid .marketplace-product-card .add-button { justify-content: center; width: 100%; min-height: 34px; font-size: .6rem; }
+}

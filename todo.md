@@ -98,3 +98,6 @@
 - [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
 - [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
 - [ ] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
+- [ ] Fix the admin attach-file and cover-upload controls so file selection and upload feedback are reliable.
+- [ ] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
+- [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.

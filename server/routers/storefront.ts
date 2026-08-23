@@ -229,6 +229,20 @@ export const storefrontRouter = router({
       await db.update(marketplaceListings).set({ coverImageUrl: uploaded.key }).where(eq(marketplaceListings.id, input.listingId));
       return { url: `/api/cover/${input.listingId}` };
     }),
+    completeDirectUpload: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), kind: z.enum(["file", "cover"]), storageKey: z.string().min(10).max(500), originalFilename: z.string().min(1).max(255), mimeType: z.string().min(1).max(120) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      const listing = await db.select({ id: marketplaceListings.id }).from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
+      if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
+      const expectedPrefix = input.kind === "cover" ? `product-covers/${input.listingId}/` : `product-files/${input.listingId}/`;
+      if (!input.storageKey.startsWith(expectedPrefix)) throw new TRPCError({ code: "BAD_REQUEST", message: "Upload key does not match this product." });
+      if (input.kind === "cover") {
+        if (!/^image\/(png|jpeg|webp|gif)$/.test(input.mimeType)) throw new TRPCError({ code: "BAD_REQUEST", message: "Unsupported cover image type." });
+        await db.update(marketplaceListings).set({ coverImageUrl: input.storageKey }).where(eq(marketplaceListings.id, input.listingId));
+        return { success: true, url: `/api/cover/${input.listingId}` };
+      }
+      await db.insert(productAssets).values({ listingId: input.listingId, storageKey: input.storageKey, originalFilename: input.originalFilename, mimeType: input.mimeType });
+      return { success: true };
+    }),
     setStatus: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
       const db = await requireDb();
       if (input.status === "published") {

@@ -6,6 +6,7 @@ import { registerStorageProxy } from "./_core/storageProxy";
 import { registerCoverImageRoutes } from "./coverImages";
 import { registerFreeDownloadRoutes } from "./freeDownloads";
 import { registerPaidDownloadRoutes } from "./paidDownloads";
+import { registerDirectUploadRoutes } from "./directUploads";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import { buildRobotsTxt, buildSitemapXml } from "./seo";
@@ -23,6 +24,7 @@ export function createEhodeHttpApp(): Express {
   registerCoverImageRoutes(app);
   registerFreeDownloadRoutes(app);
   registerPaidDownloadRoutes(app);
+  registerDirectUploadRoutes(app);
   registerOAuthRoutes(app);
   app.get("/robots.txt", (_req, res) => res.type("text/plain").send(buildRobotsTxt()));
   app.get("/sitemap.xml", async (_req, res, next) => {

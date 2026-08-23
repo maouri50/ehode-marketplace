@@ -362,6 +362,25 @@ a { color: inherit; }
 .marketplace-studio__card a { display: inline-flex; align-items: center; gap: .2rem; margin-top: .4rem; color: #fff; font-size: .78rem; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .marketplace-footer { background: #fff; }
 
+.newsletter-signup { border-top: 1px solid #e8e2da; background: linear-gradient(110deg, #2d2723, #453b32); color: #fffaf3; }
+.newsletter-signup__inner { display: grid; gap: 2rem; padding-top: 3.6rem; padding-bottom: 3.6rem; }
+.newsletter-signup__copy > span { display: inline-flex; align-items: center; gap: .4rem; color: #f3a476; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.newsletter-signup h2 { max-width: 520px; margin: .7rem 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; letter-spacing: -.055em; line-height: 1.02; }
+.newsletter-signup__copy > p { max-width: 520px; margin: .85rem 0 0; color: #d8d0c8; font-size: .92rem; line-height: 1.6; }
+.newsletter-signup__form-wrap { align-self: center; max-width: 510px; }
+.newsletter-signup__form { display: grid; grid-template-columns: 1fr auto; gap: .55rem; }
+.newsletter-signup__form input { min-width: 0; min-height: 50px; padding: 0 .9rem; border: 1px solid transparent; border-radius: 8px; background: #fffdf9; color: #29231f; font: inherit; }
+.newsletter-signup__form input:focus { outline: 3px solid rgba(241,100,30,.33); }
+.newsletter-signup__form button { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 50px; padding: 0 1rem; border: 1px solid #f1641e; border-radius: 8px; background: #f1641e; color: #fff; font-size: .82rem; font-weight: 800; }
+.newsletter-signup__form button:hover:not(:disabled) { background: #ca4b11; border-color: #ca4b11; }
+.newsletter-signup__consent { margin: .8rem 0 0; color: #c7beb5; font-size: .68rem; line-height: 1.5; }
+.newsletter-signup__message { display: flex; align-items: center; gap: .42rem; margin: .9rem 0 0; color: #c8f0d5; font-size: .78rem; font-weight: 700; }
+
+.admin-newsletter { margin-top: 1.3rem; }
+.admin-newsletter-list { display: grid; gap: .1rem; }
+.admin-newsletter-list > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; padding: .85rem 0; border-top: 1px solid #e8e0d8; color: #342a22; font-size: .86rem; }
+.admin-newsletter-list small { color: #84766a; font-size: .72rem; }
+
 .marketplace-listing { padding-top: 1.6rem; padding-bottom: 4.5rem; }
 .marketplace-listing__visual { border-radius: 12px; }
 .marketplace-listing__content { padding-top: 0; }
@@ -422,6 +441,8 @@ a { color: inherit; }
   .marketplace-hero__benefits { gap: .6rem .8rem; margin-top: 1.3rem; font-size: .68rem; }
   .marketplace-hero__image { min-height: 220px; border-radius: 11px; }
   .marketplace-hero__image img { min-height: 220px; }
+  .newsletter-signup__inner { padding-top: 2.6rem; padding-bottom: 2.6rem; }
+  .newsletter-signup__form { grid-template-columns: 1fr; }
   .marketplace-categories__heading { padding-top: 1rem; }
   .marketplace-categories__row { margin-right: -1.25rem; padding-right: 1.25rem; }
   .marketplace-categories__row button { min-width: 132px; min-height: 76px; padding: .7rem .75rem; font-size: .91rem; }

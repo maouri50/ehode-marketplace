@@ -2,16 +2,18 @@ import { TRPCError } from "@trpc/server";
 import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets, shops } from "../../drizzle/schema";
+import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
 import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
+import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
 const buyerEmailInput = z.string().trim().email().max(320).transform((value) => value.toLowerCase());
+const newsletterEmailInput = z.string().trim().email().max(320).transform(normalizeNewsletterEmail);
 const activeListing = eq(marketplaceListings.status, "published");
 
 export function resolveBuyerEmail(buyerEmail: string | null | undefined, paypalPayerEmail: string | null | undefined) {
@@ -101,6 +103,16 @@ export const storefrontRouter = router({
       return { files: assets.map((asset) => ({ filename: asset.originalFilename, url: `/api/download/free/${listing[0]!.id}/${asset.id}` })) };
     }),
   }),
+  newsletter: router({
+    subscribe: publicProcedure.input(z.object({ email: newsletterEmailInput })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      return subscribeNewsletter({
+        findByEmail: async (email) => (await db.select({ id: newsletterSubscriptions.id, status: newsletterSubscriptions.status }).from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1))[0] ?? null,
+        create: async (email) => { await db.insert(newsletterSubscriptions).values({ email, status: "active", consentedAt: new Date() }); },
+        reactivate: async (id) => { await db.update(newsletterSubscriptions).set({ status: "active", consentedAt: new Date(), unsubscribedAt: null }).where(eq(newsletterSubscriptions.id, id)); },
+      }, input.email);
+    }),
+  }),
   paypal: router({
     config: publicProcedure.query(() => ({ clientId: ENV.paypalClientId, mode: ENV.paypalMode })),
     createOrder: publicProcedure.input(z.object({ items: z.array(cartInput).min(1).max(20), buyerEmail: buyerEmailInput })).mutation(async ({ input }) => {
@@ -175,6 +187,10 @@ export const storefrontRouter = router({
     }),
   }),
   owner: router({
+    newsletterSubscribers: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select({ id: newsletterSubscriptions.id, email: newsletterSubscriptions.email, status: newsletterSubscriptions.status, consentedAt: newsletterSubscriptions.consentedAt }).from(newsletterSubscriptions).orderBy(desc(newsletterSubscriptions.consentedAt)).limit(250);
+    }),
     orders: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       const orders = await db.select().from(marketplaceOrders).orderBy(desc(marketplaceOrders.createdAt)).limit(30);

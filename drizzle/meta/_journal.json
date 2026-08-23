@@ -36,6 +36,13 @@
       "when": 1787505803093,
       "tag": "0004_handy_violations",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1787525437434,
+      "tag": "0005_slimy_viper",
+      "breakpoints": true
     }
   ]
 }

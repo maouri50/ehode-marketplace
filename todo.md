@@ -125,6 +125,11 @@
 - [x] Restore the original Ehode storefront from before the homepage and listing-card visual experiments.
 - [x] Replace the temporary plain-text SEO HTML with a branded first-paint loading state that does not flash before the storefront appears.
 - [x] Restore the correct original homepage hero image in place of the current notebook illustration without changing the remaining design.
+- [x] Generate and use a stylish original hero image that fits Ehode's existing warm neutral and orange visual identity.
+- [x] Verify the new hero image framing on desktop and phone without changing the rest of the storefront.
+- [x] Add a voluntary newsletter subscription form with email validation, clear marketing consent wording, and safe duplicate handling.
+- [x] Store newsletter subscriptions privately for owner use without sending marketing emails automatically.
+- [x] Exercise the newsletter form end-to-end: valid subscription success, safe duplicate response, and invalid-email handling on desktop and phone.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

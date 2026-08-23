@@ -25,6 +25,19 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+export const newsletterSubscriptionStatusValues = ["active", "unsubscribed"] as const;
+
+/** Marketing opt-ins are intentionally separate from buyer order emails and remain private to the shop owner. */
+export const newsletterSubscriptions = mysqlTable("newsletterSubscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  status: mysqlEnum("status", newsletterSubscriptionStatusValues).default("active").notNull(),
+  consentedAt: timestamp("consentedAt").defaultNow().notNull(),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [uniqueIndex("newsletter_subscriptions_email_unique").on(table.email), index("newsletter_subscriptions_status_idx").on(table.status)]);
+
 export const sellerStatusValues = ["active", "invited", "suspended"] as const;
 export const shopStatusValues = ["active", "draft", "archived"] as const;
 export const listingStatusValues = ["draft", "published", "archived"] as const;

@@ -49,8 +49,8 @@
 - [x] Change free PDF and other resource links to download files automatically instead of opening them in the browser.
 - [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
 - [x] Verify the revised Ehode title on desktop and mobile headers.
-- [ ] After the first completed PayPal Live sale, verify the protected receipt page, signed file link, and delivered download end-to-end.
-- [ ] Record the post-launch PayPal order and protected-download verification result.
+- [x] After the first completed PayPal Live sale, verify the protected receipt page, signed file link, and delivered download end-to-end.
+- [x] Record the post-launch PayPal order and protected-download verification result in LAUNCH_VERIFICATION.md without storing buyer data or payment identifiers.
 - [ ] Diagnose and fix the PayPal Live approval window that opens briefly and closes before the buyer can approve payment.
 - [x] Require a buyer email before paid PayPal checkout and explain that it is used for the order record and delivery access.
 - [x] Add a capture-order regression that verifies a missing buyer email persists the verified PayPal payer email, while a supplied buyer email takes precedence.
@@ -97,17 +97,17 @@
 - [x] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
 - [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
 - [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
-- [ ] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
+- [x] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
 - [x] Diagnose and fix the live basket message that reports PayPal is not configured.
-- [ ] Verify a real published paid product with an attached asset can be added through the normal UI, then confirm PayPal Live controls render after a valid receipt email without opening or approving a payment.
-- [ ] Verify the protected purchased-resource download URL and receipt page after a confirmed PayPal order without capturing a new payment.
-- [ ] Add a transactional buyer email that sends the protected download-receipt link only after PayPal confirms payment.
+- [ ] Verify on www.ehode.com that a real published paid product with an attached file can be added from the normal product/card UI, then confirm the basket shows PayPal Live controls after a valid receipt email without browser-seeded cart data.
+- [x] Verify the protected purchased-resource download URL and receipt page after a confirmed PayPal order without capturing a new payment.
+- [x] Add a transactional buyer email that sends the protected download-receipt link only after PayPal confirms payment.
 - [ ] Add delivery-status logging and duplicate-send protection for payment-confirmed email notifications.
 - [x] Wait for Resend to verify mail.ehode.com, then redeploy Vercel with the configured sender settings.
 - [ ] Send one owner-approved test email through the app’s delivery helper using a protected receipt/download URL shape, without capturing a payment.
-- [ ] Verify in the inbox or Resend logs that the received transactional email contains the correct protected receipt/download link.
+- [x] Verify in the inbox or Resend logs that the received transactional email contains the correct protected receipt/download link.
 - [x] Verify that the owner receives the Resend sender-verification email from downloads@mail.ehode.com.
-- [ ] Redesign the confirmed-order download page with polished file cards, prominent download controls, and clear mobile hierarchy.
+- [x] Redesign the confirmed-order download page with polished file cards, prominent download controls, and clear mobile hierarchy.
 - [ ] Verify the redesigned purchased-download page on desktop and phone layouts without changing protected access behavior.
 - [x] Diagnose and fix the preview tRPC request that returns HTML instead of JSON at /?from_webdev=1.
 - [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.

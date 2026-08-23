@@ -39,24 +39,24 @@ export function registerDirectUploadRoutes(app: Express) {
 
           const maximumSizeInBytes = payload.kind === "cover" ? MAX_COVER_BYTES : MAX_RESOURCE_BYTES;
           if (payload.size > maximumSizeInBytes) throw new Error(payload.kind === "cover" ? "Cover images must be under 12 MB." : "Resource files exceed the storage provider's 5 TB per-file limit.");
-          const allowedContentTypes = payload.kind === "cover" ? ["image/png", "image/jpeg", "image/webp", "image/gif"] : ["*/*"];
+          const allowedContentTypes = payload.kind === "cover" ? ["image/png", "image/jpeg", "image/webp", "image/gif"] : undefined;
           if (payload.kind === "cover" && !/^image\/(png|jpeg|webp|gif)$/.test(payload.mimeType)) throw new Error("Use a PNG, JPG, WEBP, or GIF cover image.");
 
           const token = await issueSignedToken({
             pathname,
             operations: ["put"],
-            allowedContentTypes,
             maximumSizeInBytes,
             validUntil: Date.now() + 15 * 60 * 1000,
+            ...(allowedContentTypes ? { allowedContentTypes } : {}),
           });
           return {
             token,
             urlOptions: {
-              allowedContentTypes,
               maximumSizeInBytes,
               validUntil: Date.now() + 15 * 60 * 1000,
               addRandomSuffix: false,
               allowOverwrite: false,
+              ...(allowedContentTypes ? { allowedContentTypes } : {}),
             },
           };
         },

@@ -94,12 +94,14 @@
 - [ ] Verify the live homepage and catalog API return published products rather than an empty result.
 - [x] Publish the TiDB TLS database-client update to GitHub before redeploying the Vercel API.
 - [x] Replace managed storage paths with an external object-storage integration for new private covers and protected download files.
-- [ ] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
+- [x] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
 - [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
 - [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
 - [ ] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
-- [ ] Fix the admin attach-file and cover-upload controls so file selection and upload feedback are reliable.
-- [ ] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
+- [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.
+- [ ] Allow PDF and other valid digital resource MIME types in the presigned Blob upload flow.
+- [ ] Diagnose and fix the reported free-resource download failure on the live storefront.
+- [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
 - [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.
-- [ ] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.
-- [ ] Add the explicit nested Vercel Blob-upload route so the secure direct-upload token request reaches the API function.
+- [x] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.
+- [x] Add the explicit nested Vercel Blob-upload route so the secure direct-upload token request reaches the API function.

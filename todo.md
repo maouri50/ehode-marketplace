@@ -101,3 +101,5 @@
 - [ ] Fix the admin attach-file and cover-upload controls so file selection and upload feedback are reliable.
 - [ ] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.
 - [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.
+- [ ] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.
+- [ ] Add the explicit nested Vercel Blob-upload route so the secure direct-upload token request reaches the API function.

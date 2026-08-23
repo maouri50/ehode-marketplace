@@ -85,7 +85,7 @@
 - [x] Provide a Vercel-compatible deployment configuration and verify the generated storefront entry point.
 - [x] Diagnose the empty catalog and unavailable uploaded assets in the Vercel static deployment.
 - [x] Document the database, storage, and API runtime requirements for a complete external Ehode launch.
-- [ ] Upload the Vercel serverless API adapter and configuration to GitHub, then redeploy Vercel.
+- [x] Upload the Vercel serverless API adapter and configuration to GitHub, then redeploy Vercel.
 - [x] Verify the live Vercel tRPC catalog route returns JSON rather than 404 after the adapter deployment.
 - [x] Fix the Vercel function bundle so it includes the Express API application instead of failing with ERR_MODULE_NOT_FOUND.
 - [x] Add an explicit nested Vercel tRPC route so multi-segment catalog requests reach the API function.
@@ -93,5 +93,7 @@
 - [ ] Migrate the required published product listings, assets, and cover references into TiDB so the live catalog is populated.
 - [ ] Verify the live homepage and catalog API return published products rather than an empty result.
 - [x] Publish the TiDB TLS database-client update to GitHub before redeploying the Vercel API.
-- [ ] Replace managed storage paths with an external object-storage integration and migrate public covers plus protected download files.
+- [x] Replace managed storage paths with an external object-storage integration for new private covers and protected download files.
+- [ ] Publish the private-cover proxy and managed-hero replacement to GitHub, then redeploy Vercel.
+- [ ] Upload final cover images and downloadable product files to the connected Blob store as products are added.
 - [ ] Configure production environment variables, validate standalone admin access, and perform a controlled pre-sale checkout verification on Vercel.

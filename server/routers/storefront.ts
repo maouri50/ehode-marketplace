@@ -17,6 +17,11 @@ function money(value: string | number) {
   return Number(value).toFixed(2);
 }
 
+function publicCoverUrl(listingId: number, coverImageUrl: string | null) {
+  if (coverImageUrl?.startsWith("product-covers/")) return `/api/cover/${listingId}`;
+  return coverImageUrl;
+}
+
 async function requireDb() {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "The catalog database is unavailable." });
@@ -53,7 +58,7 @@ export const storefrontRouter = router({
         if (input?.category && row.categoryHandle !== input.category) return false;
         if (!query) return true;
         return `${row.title} ${row.description ?? ""} ${row.productType ?? ""} ${row.category ?? ""}`.toLowerCase().includes(query);
-      });
+      }).map((row) => ({ ...row, coverImageUrl: publicCoverUrl(row.id, row.coverImageUrl) }));
     }),
     byHandle: publicProcedure.input(z.object({ handle: z.string().min(1).max(255) })).query(async ({ input }) => {
       const db = await requireDb();
@@ -75,7 +80,7 @@ export const storefrontRouter = router({
         .where(and(activeListing, eq(marketplaceListings.handle, input.handle)))
         .groupBy(marketplaceListings.id, catalogCategories.id)
         .limit(1);
-      return rows[0] ?? null;
+      return rows[0] ? { ...rows[0], coverImageUrl: publicCoverUrl(rows[0].id, rows[0].coverImageUrl) } : null;
     }),
     categories: publicProcedure.query(async () => {
       const db = await requireDb();
@@ -215,10 +220,10 @@ export const storefrontRouter = router({
         `product-covers/${input.listingId}/${safeFilename}`,
         Buffer.from(input.base64Data, "base64"),
         input.mimeType,
-        { access: "public" },
+        { access: "private" },
       );
-      await db.update(marketplaceListings).set({ coverImageUrl: uploaded.url }).where(eq(marketplaceListings.id, input.listingId));
-      return { url: uploaded.url };
+      await db.update(marketplaceListings).set({ coverImageUrl: uploaded.key }).where(eq(marketplaceListings.id, input.listingId));
+      return { url: `/api/cover/${input.listingId}` };
     }),
     setStatus: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
       const db = await requireDb();

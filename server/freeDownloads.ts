@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
 import { marketplaceListings, productAssets } from "../drizzle/schema";
 import { getDb } from "./db";
-import { storageGetSignedUrl } from "./storage";
+import { storageRead } from "./storage";
 
 function safeAttachmentName(filename: string) {
   return filename.replace(/[\r\n"\\]/g, "_").slice(0, 180) || "ehode-download";
@@ -36,12 +36,10 @@ export function registerFreeDownloadRoutes(app: Express) {
         return res.status(404).send("File not found.");
       }
 
-      const signedUrl = await storageGetSignedUrl(file.storageKey);
-      const upstream = await fetch(signedUrl);
-      if (!upstream.ok) return res.status(502).send("The download file is temporarily unavailable.");
-      const bytes = Buffer.from(await upstream.arrayBuffer());
+      const stored = await storageRead(file.storageKey);
+      const bytes = stored.bytes;
       const filename = safeAttachmentName(file.originalFilename);
-      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+      res.setHeader("Content-Type", file.mimeType || stored.contentType || "application/octet-stream");
       res.setHeader("Content-Length", String(bytes.length));
       res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
       res.setHeader("Cache-Control", "private, no-store");

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
-import { storageGetSignedUrl, storagePut } from "../storage";
+import { storagePut } from "../storage";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -15,6 +15,11 @@ const activeListing = eq(marketplaceListings.status, "published");
 
 function money(value: string | number) {
   return Number(value).toFixed(2);
+}
+
+function publicCoverUrl(listingId: number, coverImageUrl: string | null) {
+  if (coverImageUrl?.startsWith("product-covers/")) return `/api/cover/${listingId}`;
+  return coverImageUrl;
 }
 
 async function requireDb() {
@@ -53,7 +58,7 @@ export const storefrontRouter = router({
         if (input?.category && row.categoryHandle !== input.category) return false;
         if (!query) return true;
         return `${row.title} ${row.description ?? ""} ${row.productType ?? ""} ${row.category ?? ""}`.toLowerCase().includes(query);
-      });
+      }).map((row) => ({ ...row, coverImageUrl: publicCoverUrl(row.id, row.coverImageUrl) }));
     }),
     byHandle: publicProcedure.input(z.object({ handle: z.string().min(1).max(255) })).query(async ({ input }) => {
       const db = await requireDb();
@@ -75,7 +80,7 @@ export const storefrontRouter = router({
         .where(and(activeListing, eq(marketplaceListings.handle, input.handle)))
         .groupBy(marketplaceListings.id, catalogCategories.id)
         .limit(1);
-      return rows[0] ?? null;
+      return rows[0] ? { ...rows[0], coverImageUrl: publicCoverUrl(rows[0].id, rows[0].coverImageUrl) } : null;
     }),
     categories: publicProcedure.query(async () => {
       const db = await requireDb();
@@ -159,8 +164,7 @@ export const storefrontRouter = router({
       const rows = await db.select({ grant: downloadGrants, asset: productAssets }).from(downloadGrants).innerJoin(productAssets, eq(downloadGrants.assetId, productAssets.id)).where(eq(downloadGrants.accessToken, input.token)).limit(1);
       const row = rows[0];
       if (!row || (row.grant.expiresAt && row.grant.expiresAt < new Date())) throw new TRPCError({ code: "NOT_FOUND", message: "Download access is unavailable." });
-      await db.update(downloadGrants).set({ downloadCount: row.grant.downloadCount + 1 }).where(eq(downloadGrants.id, row.grant.id));
-      return { url: await storageGetSignedUrl(row.asset.storageKey), filename: row.asset.originalFilename };
+      return { url: `/api/download/paid/${encodeURIComponent(input.token)}`, filename: row.asset.originalFilename };
     }),
   }),
   owner: router({
@@ -212,9 +216,14 @@ export const storefrontRouter = router({
       const listing = await db.select({ id: marketplaceListings.id }).from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
       if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
       const safeFilename = input.originalFilename.replace(/[^a-zA-Z0-9._-]+/g, "-");
-      const uploaded = await storagePut(`product-covers/${input.listingId}/${safeFilename}`, Buffer.from(input.base64Data, "base64"), input.mimeType);
-      await db.update(marketplaceListings).set({ coverImageUrl: uploaded.url }).where(eq(marketplaceListings.id, input.listingId));
-      return { url: uploaded.url };
+      const uploaded = await storagePut(
+        `product-covers/${input.listingId}/${safeFilename}`,
+        Buffer.from(input.base64Data, "base64"),
+        input.mimeType,
+        { access: "private" },
+      );
+      await db.update(marketplaceListings).set({ coverImageUrl: uploaded.key }).where(eq(marketplaceListings.id, input.listingId));
+      return { url: `/api/cover/${input.listingId}` };
     }),
     setStatus: adminSessionProcedure.input(z.object({ listingId: z.number().int().positive(), status: z.enum(["draft", "published", "archived"]) })).mutation(async ({ input }) => {
       const db = await requireDb();

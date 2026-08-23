@@ -6,6 +6,7 @@
 dist/
 build/
 *.dist
+api/handler.mjs
 
 # Environment variables
 .env

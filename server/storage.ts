@@ -1,8 +1,14 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uploads via Forge Server presigned URL to S3 (PUT direct).
-// Downloads return /manus-storage/{key} paths served via 307 redirect.
+// Storage helpers use Vercel Blob in external production and retain the
+// managed Forge storage fallback for the local Manus development workspace.
 
+import { get as getBlob, put as putBlob } from "@vercel/blob";
 import { ENV } from "./_core/env";
+
+type StorageAccess = "public" | "private";
+
+function usesVercelBlob() {
+  return Boolean(process.env.BLOB_STORE_ID);
+}
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;
@@ -32,9 +38,21 @@ export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
+  options: { access?: StorageAccess } = {},
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
+  const access = options.access ?? "private";
+
+  if (usesVercelBlob()) {
+    const uploaded = await putBlob(key, typeof data === "string" ? data : Buffer.from(data), {
+      access,
+      addRandomSuffix: true,
+      contentType,
+    });
+    return { key: uploaded.pathname, url: uploaded.url };
+  }
+
+  const { forgeUrl, forgeKey } = getForgeConfig();
 
   // 1. Get presigned PUT URL from Forge
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
@@ -77,6 +95,10 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
+  if (usesVercelBlob()) {
+    throw new Error("Private Vercel Blob files must be delivered through an authenticated application route.");
+  }
+
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = normalizeKey(relKey);
 
@@ -94,4 +116,29 @@ export async function storageGetSignedUrl(relKey: string): Promise<string> {
 
   const { url } = (await resp.json()) as { url: string };
   return url;
+}
+
+export async function storageRead(
+  relKey: string,
+): Promise<{ bytes: Buffer; contentType?: string }> {
+  const key = normalizeKey(relKey);
+
+  if (usesVercelBlob()) {
+    const result = await getBlob(key, { access: "private" });
+    if (!result || result.statusCode !== 200) {
+      throw new Error("Private Blob file was not found.");
+    }
+    return {
+      bytes: Buffer.from(await new Response(result.stream).arrayBuffer()),
+      contentType: result.blob.contentType,
+    };
+  }
+
+  const signedUrl = await storageGetSignedUrl(key);
+  const response = await fetch(signedUrl);
+  if (!response.ok) throw new Error("Managed storage file could not be read.");
+  return {
+    bytes: Buffer.from(await response.arrayBuffer()),
+    contentType: response.headers.get("content-type") ?? undefined,
+  };
 }

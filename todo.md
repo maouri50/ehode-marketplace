@@ -88,6 +88,7 @@
 - [ ] Upload the Vercel serverless API adapter and configuration to GitHub, then redeploy Vercel.
 - [ ] Verify the live Vercel tRPC catalog route returns JSON rather than 404 after the adapter deployment.
 - [ ] Fix the Vercel function bundle so it includes the Express API application instead of failing with ERR_MODULE_NOT_FOUND.
+- [ ] Add an explicit nested Vercel tRPC route so multi-segment catalog requests reach the API function.
 - [ ] Provision and connect an external production database, apply the marketplace schema, and migrate required catalog data.
 - [ ] Publish the TiDB TLS database-client update to GitHub before redeploying the Vercel API.
 - [ ] Replace managed storage paths with an external object-storage integration and migrate public covers plus protected download files.

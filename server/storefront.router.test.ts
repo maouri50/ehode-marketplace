@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
+import { productAssets } from "../drizzle/schema";
+import { getDb } from "./db";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { resolveBuyerEmail } from "./routers/storefront";
@@ -47,6 +50,18 @@ describe("PayPal storefront catalog", () => {
 
     expect(babyStroller?.assetCount).toBeGreaterThan(0);
     await expect(caller.storefront.catalog.freeDownload({ listingId: babyStroller!.id })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("returns the persisted attachment target for a published free listing", async () => {
+    const caller = appRouter.createCaller(anonymousContext());
+    const listings = await caller.storefront.catalog.list();
+    const freeListing = listings.find((listing) => Number(listing.priceAmount) === 0 && Number(listing.assetCount) > 0);
+
+    expect(freeListing).toBeDefined();
+    const result = await caller.storefront.catalog.freeDownload({ listingId: freeListing!.id });
+    const db = await getDb();
+    const assets = await db!.select({ id: productAssets.id, filename: productAssets.originalFilename }).from(productAssets).where(eq(productAssets.listingId, freeListing!.id));
+    expect(result.files).toEqual(assets.map((asset) => ({ filename: asset.filename, url: `/api/download/free/${freeListing!.id}/${asset.id}` })));
   });
 
   it("rejects a paid checkout without a valid buyer email before creating a PayPal order", async () => {

@@ -1,0 +1,89 @@
+# Project TODO
+
+- [x] Define single-seller marketplace schema with future-ready seller, shop, listing, commission, and review relations.
+- [x] Shopify was provisioned for the initial preview and then removed from the active customer launch path.
+- [x] Seed no more than two original demonstration products for the first storefront preview.
+- [x] Verify that the live catalog is available through the storefront integration before binding the UI to it.
+- [x] Apply the database migration for products, categories, product assets, orders, order items, and download grants.
+- [x] Build an elegant, responsive public storefront with collections, search, featured products, and category browsing.
+- [x] Build product detail pages with product previews, licensing information, price, and cart actions.
+- [x] Build a mobile-friendly cart and secure PayPal purchase flow for available digital products.
+- [x] Build an owner-only dashboard for creating, editing, uploading, publishing, and reviewing first-party product operations.
+- [x] Build owner order records and order-linked digital download access.
+- [x] Replace the Shopify storefront checkout with a PayPal-only checkout flow for the single-seller launch.
+- [x] Add secure PayPal order creation, capture verification, and order persistence.
+- [x] Add a buyer download library with access granted only after verified PayPal capture.
+- [x] Configure PayPal sandbox credentials through secure environment variables and verify the OAuth connection.
+- [x] Audit the existing GitHub PayPal implementation and exclude all credentials, tokens, and customer data.
+- [x] Adapt only the safe PayPal checkout structure from the existing repository into the new store.
+- [x] Replace the remaining Shopify customer checkout and catalog dependencies with the PayPal-backed product flow.
+- [x] Keep vendor registration, vendor storefront creation, commissions, payouts, and buyer reviews disabled in the launch UI while retaining expansion-ready data structures.
+- [x] Supersede Shopify order synchronization with verified PayPal capture and purchase-linked download grants.
+- [x] Remove Shopify-specific customer checkout and catalog dependencies from the public launch experience.
+- [x] Add tests for catalog search and protected download access.
+- [x] Add a test for owner-only dashboard access.
+- [x] Verify desktop and mobile storefront layouts, database-backed workflows, and production build.
+- [x] Document the marketplace expansion path and deployment prerequisites.
+- [x] Defer uploading the remaining product files and publishing additional listings until after launch at the user's request.
+- [x] Attach the provided BabyStroller.pdf to the Baby Stroller SVG Bundle and publish that listing.
+- [x] Diagnose and fix duplicate PayPal Sandbox control rendering; buyer approval remains deferred until final launch.
+- [x] Supersede the remaining Sandbox buyer approval with the completed PayPal Live OAuth, unapproved-order, and button-rendering preflight.
+- [x] Defer all remaining PayPal Sandbox and Live-mode work until the final launch phase.
+- [x] Redesign the public storefront with an Etsy-inspired marketplace header, search, category navigation, dense product grid, and direct purchase cues.
+- [x] Preserve the existing PayPal checkout, protected download flow, and owner tools while changing the storefront layout.
+- [x] Verify the marketplace-style layout on desktop and mobile after the redesign.
+- [x] Supersede the Manus owner workspace with the standalone password-protected /admin workspace.
+- [x] Defer Manus owner-workspace login verification because the user does not want to use Manus sign-in.
+- [x] Redirect the legacy /owner and /owner/orders routes to /admin so the old Manus workspace is not active.
+- [x] Remove remaining owner-workspace links and legacy management copy from the launch UI and tests.
+- [x] Create a standalone password-protected /admin route that does not use Manus sign-in.
+- [x] Add secure admin session handling, login, and logout.
+- [x] Provide /admin tools for product creation, editing, publishing, cover images, and protected download-file uploads.
+- [x] Verify anonymous visitors cannot access /admin product-management operations.
+- [x] Add an /admin cover-image upload control that stores the selected image and saves its URL to the product listing.
+- [x] Add a product pricing mode that supports free resources alongside paid PayPal products.
+- [x] Add secure free-download access for published listings with an attached file and a zero price.
+- [x] Verify free downloads on the public product page.
+- [x] Upload one cover image through /admin and confirm it renders on the corresponding public product page.
+- [x] Add regression coverage for admin cover-upload access control.
+- [x] Change free PDF and other resource links to download files automatically instead of opening them in the browser.
+- [x] Redesign the Ehode wordmark in the storefront header with improved typography, spacing, and responsive scale.
+- [x] Verify the revised Ehode title on desktop and mobile headers.
+- [ ] After the first completed PayPal Live sale, verify the protected receipt page, signed file link, and delivered download end-to-end.
+- [ ] Record the post-launch PayPal order and protected-download verification result.
+- [ ] Diagnose and fix the PayPal Live approval window that opens briefly and closes before the buyer can approve payment.
+- [ ] Require a buyer email before paid PayPal checkout and explain that it is used for the order record and delivery access.
+- [ ] Persist the buyer-supplied email with the verified PayPal order, falling back to the PayPal payer email only when needed.
+- [ ] Display buyer email addresses only in the password-protected /admin order history.
+- [ ] Add regression coverage for email validation, order capture, and private admin access to buyer email data.
+- [ ] Refine the buyer email and PayPal area so the cart keeps a compact, visually consistent checkout layout.
+- [x] Diagnose and fix the root-page tRPC request that returns HTML instead of JSON when opened with from_webdev=1.
+- [x] Verify public catalog, category, and checkout configuration tRPC responses return valid JSON after the fix.
+- [x] Package the complete source code for GitHub handoff without environment secrets, local dependencies, generated builds, or development logs.
+- [x] Provide GitHub upload and deployment instructions, including the required environment variable names without their values.
+- [x] Supersede the Sandbox purchase test with PayPal Live preflight verification before public launch.
+- [x] Replace sandbox credentials with matching PayPal Live credentials and set PAYPAL_MODE=live before public launch.
+- [x] Validate the PayPal Live OAuth connection using production credentials stored only in secure settings.
+- [x] Create one unapproved PayPal Live order to verify checkout setup without capturing funds; do not approve or capture it.
+- [x] Restart the app and verify the public PayPal configuration endpoint reports mode=live before accepting customer payments.
+- [x] Confirm the storefront loads the PayPal Live button after the verified Live configuration restart.
+- [x] Audit current indexability, metadata, canonical URLs, and page-level SEO for the storefront and product pages.
+- [x] Add crawler-visible server-rendered metadata for public home and product routes without rendering private admin or buyer data.
+- [x] Render crawlable public home and product-page content in the server HTML response, not only metadata.
+- [x] Add unique page titles, descriptions, Open Graph metadata, and product structured data.
+- [x] Add dynamic sitemap.xml and robots.txt routes for public products and core storefront pages.
+- [x] Verify the SEO metadata, sitemap, and crawl directives before publishing.
+- [x] Document Google Search Console submission steps after the production domain is published.
+- [x] Verify the saved Google Search Console launch guide is available in the project documentation.
+- [x] Redesign the public mobile header, search, category browsing, product cards, and purchase cues for touch-first marketplace browsing.
+- [x] Add mobile-only bottom navigation and an accessible cart shortcut without creating buyer accounts.
+- [x] Verify the homepage, product details, and cart on a phone-sized viewport.
+- [x] Confirm the Download free action starts a direct file download after the mobile UI changes.
+- [x] Diagnose the Vercel pnpm install build failure after the GitHub source upload.
+- [x] Verify the GitHub repository contains the complete project structure and provide corrected Vercel deployment settings.
+- [x] Diagnose why the Vercel root route serves bundled server JavaScript instead of the Ehode storefront.
+- [x] Provide a Vercel-compatible deployment configuration and verify the generated storefront entry point.
+- [x] Diagnose the empty catalog and unavailable uploaded assets in the Vercel static deployment.
+- [x] Document the database, storage, and API runtime requirements for a complete external Ehode launch.
+- [ ] Upload the Vercel serverless API adapter and configuration to GitHub, then redeploy Vercel.
+- [ ] Verify the live Vercel tRPC catalog route returns JSON rather than 404 after the adapter deployment.

@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1787402216785,
+      "tag": "0000_bent_colossus",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787402508525,
+      "tag": "0001_curved_wither",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787406689417,
+      "tag": "0002_sloppy_plazm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787407005400,
+      "tag": "0003_fixed_the_anarchist",
+      "breakpoints": true
+    }
+  ]
+}

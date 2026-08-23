@@ -117,6 +117,11 @@
 - [ ] Confirm the published free listing’s asset metadata and verify that the resulting downloaded file matches that exact attached asset.
 - [x] Research buyer-demand signals and recommend a focused first digital-resource collection that fits Ehode.
 - [x] Create a practical first-product roadmap with positioning, pricing ranges, and launch order.
+- [x] Create the original Weekly Teacher Planner Pack files, product previews, and a publishing-ready Ehode listing.
+- [x] Create an unpublished $12 Weekly Teacher Planner Pack draft in /admin with its ZIP resource and prepared cover image.
+- [ ] Remove the unwanted black scribble decoration from the homepage hero artwork and verify the responsive hero presentation.
+- [x] Generate twenty distinct Ehode homepage visual concepts for the owner to choose a complete website direction.
+- [x] Deliver all twenty standalone homepage concept images with numbered direction names for the owner to select or combine.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

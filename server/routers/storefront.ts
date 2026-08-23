@@ -6,6 +6,7 @@ import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrde
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
+import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -140,7 +141,8 @@ export const storefrontRouter = router({
       const existing = await db.select().from(marketplaceOrders).where(eq(marketplaceOrders.paymentOrderId, input.paypalOrderId)).limit(1);
       if (existing[0]) return { orderId: existing[0].id, receiptToken: existing[0].receiptToken, alreadyCaptured: true };
       const receiptToken = nanoid(40);
-      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: resolveBuyerEmail(input.buyerEmail, captured.payer?.email_address), currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
+      const resolvedBuyerEmail = resolveBuyerEmail(input.buyerEmail, captured.payer?.email_address);
+      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: resolvedBuyerEmail, deliveryEmailStatus: "pending", currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
       const orderId = Number((insertedOrder as any)[0]?.insertId);
       for (const item of items) {
         const listing = listings.find((candidate) => candidate.id === item.listingId)!;
@@ -149,6 +151,7 @@ export const storefrontRouter = router({
         const assets = await db.select().from(productAssets).where(eq(productAssets.listingId, listing.id));
         for (const asset of assets) await db.insert(downloadGrants).values({ orderItemId, assetId: asset.id, accessToken: nanoid(40) });
       }
+      await sendOrderDeliveryEmail({ order: { id: orderId, receiptToken, buyerEmail: resolvedBuyerEmail }, titles: listings.map((listing) => listing.title) });
       return { orderId, receiptToken, alreadyCaptured: false };
     }),
   }),

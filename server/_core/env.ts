@@ -22,6 +22,8 @@ export const ENV = {
   paypalClientId: process.env.PAYPAL_CLIENT_ID ?? "",
   paypalSecret: process.env.PAYPAL_SECRET ?? "",
   paypalMode: process.env.PAYPAL_MODE ?? "sandbox",
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   canonicalOrigin: normalizeCanonicalOrigin(configuredCanonicalOrigin),
   siteName: configuredSiteName || "Ehode",

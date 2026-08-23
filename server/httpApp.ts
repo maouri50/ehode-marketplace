@@ -4,6 +4,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./_core/oauth";
 import { registerStorageProxy } from "./_core/storageProxy";
 import { registerFreeDownloadRoutes } from "./freeDownloads";
+import { registerPaidDownloadRoutes } from "./paidDownloads";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import { buildRobotsTxt, buildSitemapXml } from "./seo";
@@ -19,6 +20,7 @@ export function createEhodeHttpApp(): Express {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerFreeDownloadRoutes(app);
+  registerPaidDownloadRoutes(app);
   registerOAuthRoutes(app);
   app.get("/robots.txt", (_req, res) => res.type("text/plain").send(buildRobotsTxt()));
   app.get("/sitemap.xml", async (_req, res, next) => {

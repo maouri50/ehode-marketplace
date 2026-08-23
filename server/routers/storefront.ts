@@ -5,7 +5,7 @@ import { z } from "zod";
 import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
-import { storageGetSignedUrl, storagePut } from "../storage";
+import { storagePut } from "../storage";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -159,8 +159,7 @@ export const storefrontRouter = router({
       const rows = await db.select({ grant: downloadGrants, asset: productAssets }).from(downloadGrants).innerJoin(productAssets, eq(downloadGrants.assetId, productAssets.id)).where(eq(downloadGrants.accessToken, input.token)).limit(1);
       const row = rows[0];
       if (!row || (row.grant.expiresAt && row.grant.expiresAt < new Date())) throw new TRPCError({ code: "NOT_FOUND", message: "Download access is unavailable." });
-      await db.update(downloadGrants).set({ downloadCount: row.grant.downloadCount + 1 }).where(eq(downloadGrants.id, row.grant.id));
-      return { url: await storageGetSignedUrl(row.asset.storageKey), filename: row.asset.originalFilename };
+      return { url: `/api/download/paid/${encodeURIComponent(input.token)}`, filename: row.asset.originalFilename };
     }),
   }),
   owner: router({
@@ -212,7 +211,12 @@ export const storefrontRouter = router({
       const listing = await db.select({ id: marketplaceListings.id }).from(marketplaceListings).where(eq(marketplaceListings.id, input.listingId)).limit(1);
       if (!listing[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found." });
       const safeFilename = input.originalFilename.replace(/[^a-zA-Z0-9._-]+/g, "-");
-      const uploaded = await storagePut(`product-covers/${input.listingId}/${safeFilename}`, Buffer.from(input.base64Data, "base64"), input.mimeType);
+      const uploaded = await storagePut(
+        `product-covers/${input.listingId}/${safeFilename}`,
+        Buffer.from(input.base64Data, "base64"),
+        input.mimeType,
+        { access: "public" },
+      );
       await db.update(marketplaceListings).set({ coverImageUrl: uploaded.url }).where(eq(marketplaceListings.id, input.listingId));
       return { url: uploaded.url };
     }),

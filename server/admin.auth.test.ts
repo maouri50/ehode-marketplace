@@ -37,4 +37,19 @@ describe("adminAuth.login", () => {
 
     await expect(appRouter.createCaller(followUpContext).adminAuth.status()).resolves.toMatchObject({ configured: true, authenticated: true });
   });
+
+  it("allows campaign-workspace data only after standalone admin authentication", async () => {
+    const password = process.env.ADMIN_PASSWORD ?? "";
+    const { ctx, cookies } = createContext();
+    await appRouter.createCaller(ctx).adminAuth.login({ password });
+    const sessionCookie = cookies[0];
+    const followUpContext: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: { cookie: `${sessionCookie?.name}=${sessionCookie?.value}` } } as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    };
+
+    await expect(appRouter.createCaller(followUpContext).storefront.owner.newsletterCampaigns()).resolves.toEqual(expect.any(Array));
+    await expect(appRouter.createCaller(createContext().ctx).storefront.owner.newsletterCampaigns()).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
 });

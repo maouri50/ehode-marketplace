@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Downloads from "./pages/Downloads";
 import Admin from "./pages/Admin";
+import AdminNewsletter from "./pages/AdminNewsletter";
+import NewsletterUnsubscribe from "./pages/NewsletterUnsubscribe";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 function Router() {
@@ -20,6 +22,8 @@ function Router() {
       <Route path={"/owner/orders"}><Redirect to="/admin" /></Route>
       <Route path={"/owner"}><Redirect to="/admin" /></Route>
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/admin/newsletter"} component={AdminNewsletter} />
+      <Route path={"/newsletter/unsubscribe/:token"} component={NewsletterUnsubscribe} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid";
+
 export function normalizeNewsletterEmail(value: string) {
   return value.trim().toLowerCase();
 }
@@ -8,14 +10,14 @@ type SubscriptionStatus = "active" | "unsubscribed";
 
 export type NewsletterSubscriptionStore = {
   findByEmail: (email: string) => Promise<{ id: number; status: SubscriptionStatus } | null>;
-  create: (email: string) => Promise<void>;
+  create: (email: string, unsubscribeToken: string) => Promise<void>;
   reactivate: (id: number) => Promise<void>;
 };
 
 export async function subscribeNewsletter(store: NewsletterSubscriptionStore, rawEmail: string) {
   const email = normalizeNewsletterEmail(rawEmail);
   const existing = await store.findByEmail(email);
-  if (!existing) await store.create(email);
+  if (!existing) await store.create(email, nanoid(40));
   if (existing?.status === "unsubscribed") await store.reactivate(existing.id);
   return { success: true, message: NEWSLETTER_SUCCESS_MESSAGE };
 }

@@ -31,12 +31,41 @@ export const newsletterSubscriptionStatusValues = ["active", "unsubscribed"] as 
 export const newsletterSubscriptions = mysqlTable("newsletterSubscriptions", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull(),
+  unsubscribeToken: varchar("unsubscribeToken", { length: 96 }),
   status: mysqlEnum("status", newsletterSubscriptionStatusValues).default("active").notNull(),
   consentedAt: timestamp("consentedAt").defaultNow().notNull(),
   unsubscribedAt: timestamp("unsubscribedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, (table) => [uniqueIndex("newsletter_subscriptions_email_unique").on(table.email), index("newsletter_subscriptions_status_idx").on(table.status)]);
+}, (table) => [uniqueIndex("newsletter_subscriptions_email_unique").on(table.email), uniqueIndex("newsletter_subscriptions_unsubscribe_token_unique").on(table.unsubscribeToken), index("newsletter_subscriptions_status_idx").on(table.status)]);
+
+export const newsletterCampaignStatusValues = ["draft", "sending", "sent", "partial", "failed"] as const;
+export const newsletterCampaignRecipientStatusValues = ["sent", "failed"] as const;
+
+/** Campaigns are created and dispatched only by an authenticated owner action; drafting never sends email. */
+export const newsletterCampaigns = mysqlTable("newsletterCampaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  subject: varchar("subject", { length: 180 }).notNull(),
+  body: text("body").notNull(),
+  recipientCount: int("recipientCount").default(0).notNull(),
+  status: mysqlEnum("status", newsletterCampaignStatusValues).default("draft").notNull(),
+  sentAt: timestamp("sentAt"),
+  deliveryError: text("deliveryError"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("newsletter_campaigns_status_idx").on(table.status), index("newsletter_campaigns_created_idx").on(table.createdAt)]);
+
+/** Private delivery log for one campaign recipient. No recipient sees any other subscriber. */
+export const newsletterCampaignRecipients = mysqlTable("newsletterCampaignRecipients", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull().references(() => newsletterCampaigns.id, { onDelete: "cascade" }),
+  subscriptionId: int("subscriptionId").references(() => newsletterSubscriptions.id, { onDelete: "set null" }),
+  email: varchar("email", { length: 320 }).notNull(),
+  status: mysqlEnum("status", newsletterCampaignRecipientStatusValues).notNull(),
+  resendMessageId: varchar("resendMessageId", { length: 255 }),
+  deliveryError: text("deliveryError"),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+}, (table) => [uniqueIndex("newsletter_campaign_recipient_unique").on(table.campaignId, table.email), index("newsletter_campaign_recipients_campaign_idx").on(table.campaignId)]);
 
 export const sellerStatusValues = ["active", "invited", "suspended"] as const;
 export const shopStatusValues = ["active", "draft", "archived"] as const;

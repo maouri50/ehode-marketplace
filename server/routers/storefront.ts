@@ -1,19 +1,23 @@
 import { TRPCError } from "@trpc/server";
 import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { Resend } from "resend";
 import { z } from "zod";
-import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
+import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
 import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
+import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow } from "../newsletterCampaign";
+import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
 const buyerEmailInput = z.string().trim().email().max(320).transform((value) => value.toLowerCase());
 const newsletterEmailInput = z.string().trim().email().max(320).transform(normalizeNewsletterEmail);
+const newsletterCampaignInput = z.object({ subject: z.string().trim().min(3).max(180), body: z.string().trim().min(10).max(12_000) });
 const activeListing = eq(marketplaceListings.status, "published");
 
 export function resolveBuyerEmail(buyerEmail: string | null | undefined, paypalPayerEmail: string | null | undefined) {
@@ -108,9 +112,14 @@ export const storefrontRouter = router({
       const db = await requireDb();
       return subscribeNewsletter({
         findByEmail: async (email) => (await db.select({ id: newsletterSubscriptions.id, status: newsletterSubscriptions.status }).from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1))[0] ?? null,
-        create: async (email) => { await db.insert(newsletterSubscriptions).values({ email, status: "active", consentedAt: new Date() }); },
+        create: async (email, unsubscribeToken) => { await db.insert(newsletterSubscriptions).values({ email, unsubscribeToken, status: "active", consentedAt: new Date() }); },
         reactivate: async (id) => { await db.update(newsletterSubscriptions).set({ status: "active", consentedAt: new Date(), unsubscribedAt: null }).where(eq(newsletterSubscriptions.id, id)); },
       }, input.email);
+    }),
+    unsubscribe: publicProcedure.input(z.object({ token: z.string().min(20).max(96) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      await db.update(newsletterSubscriptions).set({ status: "unsubscribed", unsubscribedAt: new Date() }).where(eq(newsletterSubscriptions.unsubscribeToken, input.token));
+      return { success: true };
     }),
   }),
   paypal: router({
@@ -190,6 +199,41 @@ export const storefrontRouter = router({
     newsletterSubscribers: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       return db.select({ id: newsletterSubscriptions.id, email: newsletterSubscriptions.email, status: newsletterSubscriptions.status, consentedAt: newsletterSubscriptions.consentedAt }).from(newsletterSubscriptions).orderBy(desc(newsletterSubscriptions.consentedAt)).limit(250);
+    }),
+    newsletterCampaigns: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select().from(newsletterCampaigns).orderBy(desc(newsletterCampaigns.createdAt)).limit(50);
+    }),
+    createNewsletterCampaign: adminSessionProcedure.input(newsletterCampaignInput).mutation(async ({ input }) => {
+      const db = await requireDb();
+      try {
+        return await createNewsletterCampaignDraft(createNewsletterCampaignDatabaseStore(db), input);
+      } catch (error) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Could not create the newsletter draft." });
+      }
+    }),
+    sendNewsletterCampaign: adminSessionProcedure.input(z.object({ campaignId: z.number().int().positive(), confirmation: newsletterCampaignSendConfirmation })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      if (!ENV.resendApiKey || !ENV.resendFromEmail) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Newsletter email is not configured yet." });
+      const resend = new Resend(ENV.resendApiKey);
+      try {
+        return await sendNewsletterCampaignNow({
+          campaignId: input.campaignId,
+          confirmation: input.confirmation,
+          canonicalOrigin: ENV.canonicalOrigin,
+          makeToken: () => nanoid(40),
+          store: createNewsletterCampaignDatabaseStore(db),
+          mailer: {
+            send: async ({ to, subject, html, text, idempotencyKey }) => {
+              const response = await resend.emails.send({ from: ENV.resendFromEmail, to: [to], subject, html, text, headers: { "X-Entity-Ref-ID": idempotencyKey } });
+              if (response.error || !response.data?.id) throw new Error(response.error?.message || "Resend did not return a message ID.");
+              return { id: response.data.id };
+            },
+          },
+        });
+      } catch (error) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Could not send the newsletter campaign." });
+      }
     }),
     orders: adminSessionProcedure.query(async () => {
       const db = await requireDb();

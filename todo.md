@@ -119,7 +119,7 @@
 - [x] Create a practical first-product roadmap with positioning, pricing ranges, and launch order.
 - [x] Create the original Weekly Teacher Planner Pack files, product previews, and a publishing-ready Ehode listing.
 - [x] Create an unpublished $12 Weekly Teacher Planner Pack draft in /admin with its ZIP resource and prepared cover image.
-- [ ] Remove the unwanted black scribble decoration from the homepage hero artwork and verify the responsive hero presentation.
+- [x] Resolve the reported black scribble decoration: it was an annotation in the supplied screenshot, not live UI artwork; the homepage hero was subsequently replaced and verified responsively.
 - [x] Generate twenty distinct Ehode homepage visual concepts for the owner to choose a complete website direction.
 - [x] Deliver all twenty standalone homepage concept images with numbered direction names for the owner to select or combine.
 - [x] Restore the original Ehode storefront from before the homepage and listing-card visual experiments.
@@ -130,6 +130,11 @@
 - [x] Add a voluntary newsletter subscription form with email validation, clear marketing consent wording, and safe duplicate handling.
 - [x] Store newsletter subscriptions privately for owner use without sending marketing emails automatically.
 - [x] Exercise the newsletter form end-to-end: valid subscription success, safe duplicate response, and invalid-email handling on desktop and phone.
+- [x] Add a private /admin newsletter campaign composer with subject, message, active-recipient count, and a clear manual-send confirmation step.
+- [x] Send campaigns only to voluntary active subscribers through the configured email provider, with per-campaign delivery status and no automatic sends.
+- [x] Add a database-adapter test that proves the real owner draft path records active subscriber count and creates no delivery rows or provider calls.
+- [x] Exercise the real database campaign adapter with mixed active/unsubscribed subscribers and a mocked mailer, confirming only active delivery rows persist.
+- [ ] Prepare and verify a checkpoint that the owner can publish to ehode.com through the project Publish control.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

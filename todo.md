@@ -126,6 +126,7 @@
 - [x] Re-verify the selected homepage redesign from a clean cart state: record add-to-bag, free-download, and actual mobile-viewport basket evidence.
 - [x] Restore the original Ehode visual identity and replace only the catalog listing-card layout with the approved large image-led grid: four cards on desktop and two on phone.
 - [x] Interactively verify the final restored-color listing grid: search, cart, and free download on desktop; then confirm two-column cards and catalog interaction in a real phone viewport.
+- [x] Change final listing preview frames to the 8.5×11 portrait ratio and show uploaded previews fully without cropping on desktop and phone.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

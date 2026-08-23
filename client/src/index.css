@@ -604,3 +604,9 @@ a { color: inherit; }
   .reference-listing-grid .marketplace-product-card .product-card__bottom > span { font-size: .8rem; }
   .reference-listing-grid .marketplace-product-card .add-button { justify-content: center; width: 100%; min-height: 34px; font-size: .6rem; }
 }
+
+/* Preserve full 8.5 × 11 inch portrait preview sheets inside the final listing cards. */
+.reference-listing-grid .marketplace-product-card .product-card__image { display: grid; place-items: center; aspect-ratio: 8.5 / 11; background: #f3f0eb; }
+.reference-listing-grid .marketplace-product-card .product-card__image img { width: 100%; height: 100%; object-fit: contain; }
+.reference-listing-grid .marketplace-product-card:hover .product-card__image img { transform: none; }
+@media (max-width: 859px) { .reference-listing-grid .marketplace-product-card .product-card__image { aspect-ratio: 8.5 / 11; } }

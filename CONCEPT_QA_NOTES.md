@@ -25,3 +25,7 @@ The Optimistic Orange treatment was removed from the rendered homepage. Desktop 
 The restored-color catalog filter was also exercised after the layout change. Selecting SVG Design Bundles reduced the result count from ten to six matching listing cards without affecting the larger image-first card treatment or the surrounding page structure.
 
 Final interaction checks ran against the restored-identity version itself. Desktop search returned the single Sailboat result, and a ready listing updated the basket to `Open basket with 1 item`. At an actual 390 × 844 phone viewport, the final grid computed as two 168px columns with ten cards, the SVG filter reduced it to six cards, the visible mobile basket control opened the drawer, and the final free-download card emitted the expected `/api/download/free/30001/30001` attachment route.
+
+## Portrait preview-frame check
+
+The final catalog frame is now 8.5:11 portrait. Desktop and 390 × 844 phone screenshots confirm that the existing preview images are contained within that full portrait frame rather than cropped; future uploaded 8.5×11 preview sheets will fill the frames exactly.

@@ -26,6 +26,14 @@ export function buildOrderReceiptEmail(input: { receiptUrl: string; titles: stri
   };
 }
 
+export function didClaimPendingDelivery(result: unknown) {
+  const payload = Array.isArray(result) ? result[0] : result;
+  if (!payload || typeof payload !== "object") return false;
+  const record = payload as { affectedRows?: unknown; rowsAffected?: unknown; rowCount?: unknown };
+  const count = record.affectedRows ?? record.rowsAffected ?? record.rowCount;
+  return typeof count === "number" && count > 0;
+}
+
 /**
  * Sends only after a verified PayPal capture. Repeated capture requests are stopped by
  * the unique payment-order guard before this function is reached, preventing duplicate sends.
@@ -46,9 +54,12 @@ export async function sendOrderDeliveryEmail(input: { order: DeliveryOrder; titl
       return { status: "skipped" as const, reason: "Resend not configured" };
     }
 
-    await db.update(marketplaceOrders)
+    const claimResult = await db.update(marketplaceOrders)
       .set({ deliveryEmailStatus: "sending", deliveryEmailError: null })
       .where(and(eq(marketplaceOrders.id, input.order.id), eq(marketplaceOrders.deliveryEmailStatus, "pending")));
+    if (!didClaimPendingDelivery(claimResult)) {
+      return { status: "skipped" as const, reason: "delivery already claimed" };
+    }
 
     const receiptUrl = buildReceiptUrl(input.order.receiptToken);
     const message = buildOrderReceiptEmail({ receiptUrl, titles: input.titles });

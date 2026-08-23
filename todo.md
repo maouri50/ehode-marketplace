@@ -99,22 +99,22 @@
 - [x] Configure the TiDB, Blob, JWT, and standalone-admin production variables and validate live admin access on Vercel.
 - [x] Configure PayPal Live production variables, create a first published product with a downloadable file, and perform a controlled pre-sale checkout verification on Vercel.
 - [x] Diagnose and fix the live basket message that reports PayPal is not configured.
-- [ ] Verify on www.ehode.com that a real published paid product with an attached file can be added from the normal product/card UI, then confirm the basket shows PayPal Live controls after a valid receipt email without browser-seeded cart data.
+- [x] Verify on www.ehode.com that a real published paid product with an attached file can be added from the normal product/card UI, then confirm the basket shows PayPal Live controls after a valid receipt email without browser-seeded cart data.
 - [x] Verify the protected purchased-resource download URL and receipt page after a confirmed PayPal order without capturing a new payment.
 - [x] Add a transactional buyer email that sends the protected download-receipt link only after PayPal confirms payment.
-- [ ] Add delivery-status logging and duplicate-send protection for payment-confirmed email notifications.
+- [x] Add delivery-status logging and duplicate-send protection for payment-confirmed email notifications.
 - [x] Wait for Resend to verify mail.ehode.com, then redeploy Vercel with the configured sender settings.
 - [ ] Send one owner-approved test email through the app’s delivery helper using a protected receipt/download URL shape, without capturing a payment.
 - [x] Verify in the inbox or Resend logs that the received transactional email contains the correct protected receipt/download link.
 - [x] Verify that the owner receives the Resend sender-verification email from downloads@mail.ehode.com.
 - [x] Redesign the confirmed-order download page with polished file cards, prominent download controls, and clear mobile hierarchy.
-- [ ] Verify the redesigned purchased-download page on desktop and phone layouts without changing protected access behavior.
+- [x] Verify the redesigned purchased-download page on desktop and phone layouts without changing protected access behavior.
 - [x] Diagnose and fix the preview tRPC request that returns HTML instead of JSON at /?from_webdev=1.
 - [ ] Verify a real resource-file upload and a real cover-image upload complete from /admin after the OIDC change, then confirm their persisted product behavior.
 - [ ] Allow PDF and other valid digital resource MIME types in the presigned Blob upload flow.
-- [ ] Capture direct route evidence that the live product-page Download free click triggers the expected attachment download.
+- [ ] Verify on the published free product-detail page that the Download free control triggers a fresh browser attachment download and capture the exact /api/download/free route evidence.
 - [ ] Verify the live free-listing download procedure returns the persisted attachment target after the storage and route changes.
-- [ ] Verify the downloaded file matches the attached asset for the published free listing.
+- [ ] Confirm the published free listing’s asset metadata and verify that the resulting downloaded file matches that exact attached asset.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

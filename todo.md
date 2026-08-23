@@ -115,6 +115,8 @@
 - [ ] Verify on the published free product-detail page that the Download free control triggers a fresh browser attachment download and capture the exact /api/download/free route evidence.
 - [ ] Verify the live free-listing download procedure returns the persisted attachment target after the storage and route changes.
 - [ ] Confirm the published free listing’s asset metadata and verify that the resulting downloaded file matches that exact attached asset.
+- [x] Research buyer-demand signals and recommend a focused first digital-resource collection that fits Ehode.
+- [x] Create a practical first-product roadmap with positioning, pricing ranges, and launch order.
 - [ ] Verify the free listing API returns the persisted attachment and correct free-download URL after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

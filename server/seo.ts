@@ -136,7 +136,29 @@ export function injectSeoDocument(html: string, page: SeoPage) {
   const socialImage = image ? `<meta property="og:image" content="${image}" /><meta name="twitter:card" content="summary_large_image" />` : `<meta name="twitter:card" content="summary" />`;
   const jsonLd = JSON.stringify(page.structuredData).replace(/</g, "\\u003c");
   const seo = `<title>${title}</title><meta name="description" content="${description}" /><link rel="canonical" href="${canonical}" /><meta property="og:type" content="website" /><meta property="og:site_name" content="${escapeHtml(ENV.siteName)}" /><meta property="og:title" content="${title}" /><meta property="og:description" content="${description}" /><meta property="og:url" content="${canonical}" />${socialImage}${robots}<script type="application/ld+json">${jsonLd}</script>`;
-  return html.replace(/<title>[\s\S]*?<\/title>/i, seo).replace("<div id=\"root\"></div>", `<div id="root">${page.crawlableContent ?? ""}</div>`);
+  const firstPaintStyles = `<style data-seo-first-paint>
+    #root > main[data-seo-public-content] { box-sizing:border-box; min-height:100vh; padding:clamp(24px,5vw,72px); background:#fffdf9; color:#2f2823; font-family:Arial,Helvetica,sans-serif; }
+    main[data-seo-public-content] * { box-sizing:border-box; }
+    main[data-seo-public-content] a { color:inherit; }
+    main[data-seo-public-content="home"] > header { max-width:1180px; margin:0 auto; padding:clamp(28px,5vw,68px); border:1px solid #eadfd3; border-radius:18px; background:linear-gradient(135deg,#fff8ef 0%,#f4dfc6 100%); }
+    main[data-seo-public-content="home"] header > p:first-child { margin:0 0 12px; color:#a45726; font-size:12px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
+    main[data-seo-public-content="home"] h1 { max-width:680px; margin:0; font-family:Georgia,'Times New Roman',serif; font-size:clamp(36px,5vw,68px); line-height:.98; }
+    main[data-seo-public-content="home"] header > p:last-child { max-width:560px; margin:20px 0 0; color:#655b52; font-size:17px; line-height:1.55; }
+    main[data-seo-public-content] section { max-width:1180px; margin:52px auto 0; }
+    main[data-seo-public-content] h2 { margin:0 0 26px; font-family:Georgia,'Times New Roman',serif; font-size:clamp(28px,3vw,42px); }
+    main[data-seo-public-content] ul { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; margin:0; padding:0; list-style:none; }
+    main[data-seo-public-content] li { min-height:178px; padding:22px; border:1px solid #eadfd3; border-radius:12px; background:#fff; box-shadow:0 8px 20px rgba(68,47,29,.06); }
+    main[data-seo-public-content] li a { display:block; font-family:Georgia,'Times New Roman',serif; font-size:18px; font-weight:700; line-height:1.18; text-decoration:none; }
+    main[data-seo-public-content] li p { margin:12px 0 0; color:#71665b; font-size:13px; line-height:1.45; }
+    main[data-seo-public-content] li p:last-child { color:#a45726; font-size:14px; font-weight:800; }
+    main[data-seo-public-content="product"] { max-width:920px; margin:0 auto; padding-top:clamp(48px,9vw,120px); }
+    main[data-seo-public-content="product"] nav { margin-bottom:30px; color:#8b6a51; font-size:14px; }
+    main[data-seo-public-content="product"] article { padding:clamp(28px,5vw,64px); border:1px solid #eadfd3; border-radius:18px; background:#fff8ef; }
+    main[data-seo-public-content="product"] article p { max-width:650px; color:#655b52; font-size:16px; line-height:1.55; }
+    main[data-seo-public-content="product"] article a { display:inline-block; margin-top:12px; padding:13px 18px; border-radius:999px; background:#b65320; color:#fff; font-weight:800; text-decoration:none; }
+    @media (max-width:760px) { #root > main[data-seo-public-content] { padding:18px; } main[data-seo-public-content="home"] > header { padding:30px 24px; border-radius:14px; } main[data-seo-public-content] section { margin-top:34px; } main[data-seo-public-content] ul { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } main[data-seo-public-content] li { min-height:150px; padding:14px; } main[data-seo-public-content] li a { font-size:15px; } main[data-seo-public-content] li p { font-size:12px; } }
+  </style>`;
+  return html.replace(/<title>[\s\S]*?<\/title>/i, seo).replace("</head>", `${firstPaintStyles}</head>`).replace("<div id=\"root\"></div>", `<div id="root">${page.crawlableContent ?? ""}</div>`);
 }
 
 export async function buildSitemapXml() {

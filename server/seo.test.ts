@@ -10,6 +10,8 @@ describe("server SEO output", () => {
     expect(html).toContain("application/ld+json");
     expect(html).toContain("Digital downloads for creative projects");
     expect(html).toContain('data-seo-public-content="home"');
+    expect(html).toContain("data-seo-first-paint");
+    expect(html).toContain("grid-template-columns:repeat(4,minmax(0,1fr))");
   });
 
   it("keeps private buyer and admin routes out of search indexing", async () => {

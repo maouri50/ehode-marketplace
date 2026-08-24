@@ -157,6 +157,7 @@
 - [x] Verify the product-showcase template output without sending a campaign.
 - [ ] Inspect the failed newsletter delivery reason for the owner-sent campaign without retrieving subscriber email addresses or retrying delivery.
 - [ ] Fix any campaign-delivery configuration or error-handling issue identified, without sending another email automatically.
+- [x] Add an owner-only sanitized delivery-failure summary in campaign history that never includes subscriber email addresses or triggers a retry.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

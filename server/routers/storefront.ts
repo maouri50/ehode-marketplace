@@ -3,7 +3,7 @@ import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Resend } from "resend";
 import { z } from "zod";
-import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
+import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
@@ -11,6 +11,7 @@ import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
 import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow, type NewsletterCampaignProduct } from "../newsletterCampaign";
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
+import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailures";
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
@@ -238,6 +239,15 @@ export const storefrontRouter = router({
       const db = await requireDb();
       await ensureNewsletterCampaignSchema(db);
       return db.select().from(newsletterCampaigns).orderBy(desc(newsletterCampaigns.createdAt)).limit(50);
+    }),
+    newsletterFailureSummaries: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      await ensureNewsletterCampaignSchema(db);
+      const rows = await db.select({ campaignId: newsletterCampaignRecipients.campaignId, deliveryError: newsletterCampaignRecipients.deliveryError })
+        .from(newsletterCampaignRecipients)
+        .where(eq(newsletterCampaignRecipients.status, "failed"))
+        .limit(250);
+      return summarizeNewsletterDeliveryFailures(rows);
     }),
     newsletterTemplateProducts: adminSessionProcedure.query(async () => {
       const db = await requireDb();

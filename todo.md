@@ -219,3 +219,8 @@
 - [x] Remove the public Verified buyer notes copy from product review sections.
 - [x] Automatically publish a review only when it is submitted through a verified completed purchase, while keeping synthetic and unverified reviews blocked.
 - [x] Test that a verified purchaser review becomes publicly visible immediately and unverified review attempts remain blocked.
+- [x] Add expiring one-time buyer password-reset records with hashed tokens and no account-existence disclosure.
+- [x] Add a generic password-reset request email from the verified Ehode sender without exposing credentials or account status.
+- [x] Add secure reset-token validation, password update, and session invalidation behavior.
+- [x] Add responsive Forgot password and Reset password interfaces to the buyer account flow.
+- [x] Test expiry, one-time use, privacy, token safety, and mobile recovery behavior before publishing.

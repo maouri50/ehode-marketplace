@@ -11,6 +11,7 @@ describe("buyer feature Production schema recovery", () => {
     const emitted = statements.join("\n");
     expect(emitted).toContain("CREATE TABLE IF NOT EXISTS `buyerAccounts`");
     expect(emitted).toContain("CREATE TABLE IF NOT EXISTS `buyerSessions`");
+    expect(emitted).toContain("CREATE TABLE IF NOT EXISTS `buyerPasswordResetTokens`");
     expect(emitted).toContain("CREATE TABLE IF NOT EXISTS `buyerWishlistItems`");
     expect(emitted).toContain("CREATE TABLE IF NOT EXISTS `contactMessages`");
     expect(emitted).toContain("ALTER TABLE `marketplaceOrders` ADD COLUMN IF NOT EXISTS `buyerAccountId`");

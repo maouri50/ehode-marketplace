@@ -45,6 +45,16 @@ export const buyerSessions = mysqlTable("buyerSessions", {
   lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
 }, (table) => [uniqueIndex("buyer_sessions_token_unique").on(table.tokenHash), index("buyer_sessions_account_idx").on(table.buyerAccountId), index("buyer_sessions_expiry_idx").on(table.expiresAt)]);
 
+/** Raw reset tokens are never stored; each hashed token can be consumed once before expiry. */
+export const buyerPasswordResetTokens = mysqlTable("buyerPasswordResetTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  buyerAccountId: int("buyerAccountId").notNull().references(() => buyerAccounts.id, { onDelete: "cascade" }),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  consumedAt: timestamp("consumedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [uniqueIndex("buyer_password_reset_token_unique").on(table.tokenHash), index("buyer_password_reset_account_idx").on(table.buyerAccountId), index("buyer_password_reset_expiry_idx").on(table.expiresAt)]);
+
 /** Wishlists are private to the buyer account and hold only real marketplace listings. */
 export const buyerWishlistItems = mysqlTable("buyerWishlistItems", {
   id: int("id").autoincrement().primaryKey(),

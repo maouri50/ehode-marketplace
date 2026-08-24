@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { buyerWishlistItems, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets } from "../../drizzle/schema";
-import { clearBuyerSession, loginBuyerAccount, registerBuyerAccount, setBuyerSession } from "../buyerAuth";
+import { clearBuyerSession, loginBuyerAccount, registerBuyerAccount, requestBuyerPasswordReset, resetBuyerPassword, setBuyerSession } from "../buyerAuth";
 import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { getDb } from "../db";
 import { buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
@@ -35,6 +35,16 @@ export const buyerRouter = router({
   logout: publicProcedure.mutation(({ ctx }) => {
     clearBuyerSession(ctx);
     return { success: true as const };
+  }),
+  requestPasswordReset: publicProcedure.input(z.object({ email: buyerEmail })).mutation(async ({ input }) => {
+    await requestBuyerPasswordReset(input.email);
+    return { success: true as const, message: "If an account matches this email, a reset link is on its way." };
+  }),
+  resetPassword: publicProcedure.input(z.object({ token: z.string().min(30).max(128), password: buyerPassword })).mutation(async ({ input, ctx }) => {
+    const result = await resetBuyerPassword(input);
+    if (!result.ok) throw new TRPCError({ code: "BAD_REQUEST", message: "This reset link is invalid or expired. Please request a new one." });
+    setBuyerSession(ctx, result.session.token);
+    return { buyer: result.buyer };
   }),
   orders: buyerSessionProcedure.query(async ({ ctx }) => {
     const db = await requireDb();

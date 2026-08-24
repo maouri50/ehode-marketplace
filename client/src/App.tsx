@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import AdminNewsletter from "./pages/AdminNewsletter";
 import NewsletterUnsubscribe from "./pages/NewsletterUnsubscribe";
 import Account from "./pages/Account";
+import ResetPassword from "./pages/ResetPassword";
 import Contact from "./pages/Contact";
 import AdminCommunity from "./pages/AdminCommunity";
 import { MobileBottomNav } from "./components/MobileBottomNav";
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/admin/newsletter"} component={AdminNewsletter} />
       <Route path={"/admin/community"} component={AdminCommunity} />
       <Route path={"/account"} component={Account} />
+      <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/contact"} component={Contact} />
       <Route path={"/newsletter/unsubscribe/:token"} component={NewsletterUnsubscribe} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />

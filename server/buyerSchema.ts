@@ -35,6 +35,18 @@ export async function ensureBuyerFeatureSchema(db: any) {
     )
   `));
   await db.execute(sql.raw(`
+    CREATE TABLE IF NOT EXISTS \`buyerPasswordResetTokens\` (
+      \`id\` int AUTO_INCREMENT NOT NULL,
+      \`buyerAccountId\` int NOT NULL,
+      \`tokenHash\` varchar(128) NOT NULL,
+      \`expiresAt\` timestamp NOT NULL,
+      \`consumedAt\` timestamp NULL,
+      \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      UNIQUE KEY \`buyer_password_reset_token_unique\` (\`tokenHash\`)
+    )
+  `));
+  await db.execute(sql.raw(`
     CREATE TABLE IF NOT EXISTS \`buyerWishlistItems\` (
       \`id\` int AUTO_INCREMENT NOT NULL,
       \`buyerAccountId\` int NOT NULL,
@@ -80,6 +92,8 @@ export async function ensureBuyerFeatureSchema(db: any) {
   await db.execute(sql.raw("ALTER TABLE `buyerReviews` ADD COLUMN IF NOT EXISTS `orderItemId` int NULL"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_sessions_account_idx` ON `buyerSessions` (`buyerAccountId`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_sessions_expiry_idx` ON `buyerSessions` (`expiresAt`)"));
+  await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_password_reset_account_idx` ON `buyerPasswordResetTokens` (`buyerAccountId`)"));
+  await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_password_reset_expiry_idx` ON `buyerPasswordResetTokens` (`expiresAt`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_wishlist_account_idx` ON `buyerWishlistItems` (`buyerAccountId`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `buyer_wishlist_listing_idx` ON `buyerWishlistItems` (`listingId`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `contact_messages_status_idx` ON `contactMessages` (`status`)"));

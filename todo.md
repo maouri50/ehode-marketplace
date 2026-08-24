@@ -173,4 +173,5 @@
 - [x] Add a server-only destination setting and a verified inbound-email handler that forwards only valid newsletter-address messages to the owner's private mailbox.
 - [x] Validate inbound event signatures, ignore duplicate deliveries, enforce recipient filtering and size limits, and never create an automatic reply.
 - [x] Accept the saved project webhook-secret key in the server environment mapping so the deployed inbound endpoint can validate provider events.
+- [x] Normalize angle-bracket characters escaped by the project secret UI in the configured Ehode sender address.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

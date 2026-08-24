@@ -14,6 +14,10 @@ export function resolveInboundWebhookSecret(environment: NodeJS.ProcessEnv = pro
   return environment.RESEND_INBOUND_WEBHOOK_SECRET ?? environment.RESEND_WEBHOOK_SECRET ?? "";
 }
 
+export function normalizeResendFromEmail(value?: string) {
+  return (value ?? "").trim().replace(/\\u003c/gi, "<").replace(/\\u003e/gi, ">");
+}
+
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
@@ -27,7 +31,7 @@ export const ENV = {
   paypalSecret: process.env.PAYPAL_SECRET ?? "",
   paypalMode: process.env.PAYPAL_MODE ?? "sandbox",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  resendFromEmail: normalizeResendFromEmail(process.env.RESEND_FROM_EMAIL),
   inboundForwardTo: process.env.INBOUND_FORWARD_TO?.trim().toLowerCase() ?? "",
   resendInboundWebhookSecret: resolveInboundWebhookSecret(),
   adminPassword: process.env.ADMIN_PASSWORD ?? "",

@@ -2,15 +2,19 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const verifyWebhook = vi.fn();
 const forwardReceivedEmail = vi.fn();
+const constructResend = vi.fn();
 
 vi.mock("resend", () => ({
   Resend: class {
+    constructor(apiKey: string) {
+      constructResend(apiKey);
+    }
     webhooks = { verify: verifyWebhook };
     emails = { receiving: { forward: forwardReceivedEmail } };
   },
 }));
 
-import { ENV, resolveInboundWebhookSecret } from "./_core/env";
+import { ENV, normalizeResendFromEmail, resolveInboundWebhookSecret } from "./_core/env";
 import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, parseInboundWebhookDelivery } from "./inboundForwarding";
 
 function webhookRequest(payload: string) {
@@ -41,6 +45,7 @@ afterEach(() => {
   Object.assign(ENV, originalConfiguration);
   verifyWebhook.mockReset();
   forwardReceivedEmail.mockReset();
+  constructResend.mockReset();
 });
 
 describe("inbound forwarding configuration", () => {
@@ -52,6 +57,28 @@ describe("inbound forwarding configuration", () => {
   it("accepts the configured private forwarding destination without exposing its value", () => {
     expect(hasInboundForwardingDestination()).toBe(true);
     expect(getInboundForwardingDestination().length).toBeGreaterThan(5);
+  });
+
+  it("has a verified Ehode sender address configured for provider forwarding", () => {
+    expect(normalizeResendFromEmail("Ehode\\u003cdownloads@mail.ehode.com\\u003e")).toBe("Ehode<downloads@mail.ehode.com>");
+    expect(ENV.resendFromEmail).toMatch(/^[^<>]+<downloads@mail\.ehode\.com>$/i);
+  });
+
+  it("uses the configured Resend API key when safely processing a non-forwarded inbound event", async () => {
+    expect(ENV.resendApiKey).toMatch(/^re_/);
+    Object.assign(ENV, {
+      resendFromEmail: "Ehode <hello@mail.ehode.com>",
+      inboundForwardTo: "owner@example.com",
+      resendInboundWebhookSecret: "whsec_api_key_check",
+    });
+    verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "api-key-check", to: ["other@mail.ehode.com"] } });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
+
+    expect(constructResend).toHaveBeenCalledWith(ENV.resendApiKey);
+    expect(state.code).toBe(204);
+    expect(forwardReceivedEmail).not.toHaveBeenCalled();
   });
 
   it("uses the configured signing secret when the inbound endpoint validates a safe non-forwarded event", async () => {

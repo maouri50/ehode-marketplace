@@ -18,10 +18,10 @@ export type BuyerIdentity = {
   displayName: string;
 };
 
-type CookieRequest = { headers: { cookie?: string | string[] | undefined; "x-forwarded-proto"?: string | string[] | undefined }; protocol?: string };
+type CookieRequest = { headers: Record<string, string | string[] | undefined>; protocol?: string };
 type CookieResponse = {
   getHeader: (name: string) => number | string | string[] | undefined;
-  setHeader: (name: string, value: string | string[]) => unknown;
+  setHeader: (name: string, value: number | string | readonly string[]) => unknown;
 };
 
 function readCookie(cookieHeader: CookieRequest["headers"]["cookie"], name: string) {

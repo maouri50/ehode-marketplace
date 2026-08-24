@@ -229,3 +229,4 @@
 - [ ] Add a visitor opt-in “Notify me when available” flow for unavailable product files, with one-time email delivery after that exact product becomes downloadable.
 - [ ] Connect www.ehode.com to Google Analytics and provide the owner a clear visitor and traffic-reporting location.
 - [ ] Add a visitor-controlled analytics consent notice and Google Analytics disclosure before public tracking begins.
+- [x] Resolve the Vercel-only buyer session cookie type mismatch that blocked the Google Analytics Production deployment.

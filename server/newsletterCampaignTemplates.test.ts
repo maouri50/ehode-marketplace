@@ -17,6 +17,8 @@ describe("newsletter campaign product templates", () => {
     expect(email.html).toContain("https://www.ehode.com/products/teacher-planner");
     expect(email.html).toContain("https://www.ehode.com/api/cover/7");
     expect(email.html).not.toMatch(/review|rating|stars/i);
+    expect(email.html).not.toContain("USD 12.00");
+    expect(email.text).not.toContain("USD 12.00");
     expect(email.text).toContain("Explore all resources");
   });
 
@@ -34,5 +36,7 @@ describe("newsletter campaign product templates", () => {
     expect(email.html).toContain("The Calm Week Planner");
     expect(email.html).toContain("Explore All");
     expect(email.html).not.toMatch(/review|rating|stars/i);
+    expect(email.html).not.toContain("USD 12.00");
+    expect(email.text).not.toContain("USD 12.00");
   });
 });

@@ -39,11 +39,13 @@ export function registerFreeDownloadRoutes(app: Express) {
       const stored = await storageRead(file.storageKey);
       const bytes = stored.bytes;
       const filename = safeAttachmentName(file.originalFilename);
-      res.setHeader("Content-Type", file.mimeType || stored.contentType || "application/octet-stream");
-      res.setHeader("Content-Length", String(bytes.length));
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`);
-      res.setHeader("Cache-Control", "private, no-store");
-      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.set({
+        "Content-Type": file.mimeType || stored.contentType || "application/octet-stream",
+        "Content-Length": String(bytes.length),
+        "Content-Disposition": `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+      });
       return res.status(200).send(bytes);
     } catch (error) {
       console.error("[Free download] Failed to serve attachment", error);

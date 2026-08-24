@@ -1,0 +1,100 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const verifyWebhook = vi.fn();
+const forwardReceivedEmail = vi.fn();
+
+vi.mock("resend", () => ({
+  Resend: class {
+    webhooks = { verify: verifyWebhook };
+    emails = { receiving: { forward: forwardReceivedEmail } };
+  },
+}));
+
+import { ENV } from "./_core/env";
+import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, parseInboundWebhookDelivery } from "./inboundForwarding";
+
+function webhookRequest(payload: string) {
+  return {
+    body: Buffer.from(payload),
+    header: (name: string) => ({ "svix-id": "evt_123", "svix-timestamp": "1700000000", "svix-signature": "v1,signature" })[name] ?? undefined,
+  } as any;
+}
+
+function webhookResponse() {
+  const response = { code: 0, payload: undefined as unknown, ended: false };
+  return {
+    response: {
+      status: (code: number) => { response.code = code; return { json: (payload: unknown) => { response.payload = payload; return response; }, end: () => { response.ended = true; return response; } }; },
+    } as any,
+    state: response,
+  };
+}
+
+const originalConfiguration = {
+  resendApiKey: ENV.resendApiKey,
+  resendFromEmail: ENV.resendFromEmail,
+  inboundForwardTo: ENV.inboundForwardTo,
+  resendInboundWebhookSecret: ENV.resendInboundWebhookSecret,
+};
+
+afterEach(() => {
+  Object.assign(ENV, originalConfiguration);
+  verifyWebhook.mockReset();
+  forwardReceivedEmail.mockReset();
+});
+
+describe("inbound forwarding configuration", () => {
+  it("accepts the configured private forwarding destination without exposing its value", () => {
+    expect(hasInboundForwardingDestination()).toBe(true);
+    expect(getInboundForwardingDestination().length).toBeGreaterThan(5);
+  });
+
+  it("accepts only a signed inbound event with a usable provider email ID", () => {
+    expect(parseInboundWebhookDelivery({ type: "email.received", data: { email_id: "inbound-123", to: ["Newsletter <hello@mail.ehode.com>"] } })).toEqual({ emailId: "inbound-123", recipients: ["hello@mail.ehode.com"] });
+    expect(parseInboundWebhookDelivery({ type: "email.sent", data: { email_id: "inbound-123", to: ["hello@mail.ehode.com"] } })).toBeNull();
+    expect(parseInboundWebhookDelivery({ type: "email.received", data: { email_id: "", to: ["hello@mail.ehode.com"] } })).toBeNull();
+  });
+
+  it("filters delivery to the configured newsletter mailbox rather than forwarding all aliases", () => {
+    expect(mailboxAddress("Ehode <HELLO@mail.ehode.com>")).toBe("hello@mail.ehode.com");
+    expect(isNewsletterRecipient(["hello@mail.ehode.com"], "Ehode <hello@mail.ehode.com>")).toBe(true);
+    expect(isNewsletterRecipient(["other@mail.ehode.com"], "Ehode <hello@mail.ehode.com>")).toBe(false);
+  });
+
+  it("rejects an inbound request whose provider signature cannot be verified", async () => {
+    Object.assign(ENV, { resendApiKey: "server-key", resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_test" });
+    verifyWebhook.mockImplementation(() => { throw new Error("invalid signature"); });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest("{}"), response);
+
+    expect(state.code).toBe(401);
+    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+  });
+
+  it("forwards only the selected newsletter address once, using the provider idempotency key", async () => {
+    Object.assign(ENV, { resendApiKey: "server-key", resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_test" });
+    verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "inbound-123", to: ["hello@mail.ehode.com"] } });
+    forwardReceivedEmail.mockResolvedValue({ data: { id: "forwarded-123" }, error: null });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
+
+    expect(state.code).toBe(202);
+    expect(forwardReceivedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ emailId: "inbound-123", passthrough: true, to: "owner@example.com" }),
+      { idempotencyKey: "ehode-inbound-forward-inbound-123" },
+    );
+  });
+
+  it("does not forward messages received by a different alias and never creates an automatic reply", async () => {
+    Object.assign(ENV, { resendApiKey: "server-key", resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_test" });
+    verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "inbound-456", to: ["other@mail.ehode.com"] } });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
+
+    expect(state.code).toBe(204);
+    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+  });
+});

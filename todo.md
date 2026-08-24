@@ -168,3 +168,8 @@
 - [ ] Diagnose and fix the live resource-file upload rejection reported from /admin.
 - [x] Remove the artificial resource-file size cap while retaining storage-provider safeguards and multipart progress feedback.
 - [x] Add the explicit nested Vercel Blob-upload route so the secure direct-upload token request reaches the API function.
+- [x] Verify inbound-email receiving and webhook options for the Ehode newsletter address, then obtain the owner's architecture approval before changing DNS or provider settings.
+- [x] Do not implement the private /admin inbox, message storage, attachment retention, or in-admin replies because the owner selected private-mailbox forwarding instead.
+- [x] Add a server-only destination setting and a verified inbound-email handler that forwards only valid newsletter-address messages to the owner's private mailbox.
+- [x] Validate inbound event signatures, ignore duplicate deliveries, enforce recipient filtering and size limits, and never create an automatic reply.
+- [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

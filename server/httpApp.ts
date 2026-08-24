@@ -7,6 +7,7 @@ import { registerCoverImageRoutes } from "./coverImages";
 import { registerFreeDownloadRoutes } from "./freeDownloads";
 import { registerPaidDownloadRoutes } from "./paidDownloads";
 import { registerDirectUploadRoutes } from "./directUploads";
+import { registerInboundForwardingRoutes } from "./inboundForwarding";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
 import { buildRobotsTxt, buildSitemapXml } from "./seo";
@@ -18,6 +19,7 @@ import { buildRobotsTxt, buildSitemapXml } from "./seo";
 export function createEhodeHttpApp(): Express {
   const app = express();
 
+  registerInboundForwardingRoutes(app);
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);

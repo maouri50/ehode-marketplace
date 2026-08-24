@@ -24,6 +24,8 @@ export const ENV = {
   paypalMode: process.env.PAYPAL_MODE ?? "sandbox",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  inboundForwardTo: process.env.INBOUND_FORWARD_TO?.trim().toLowerCase() ?? "",
+  resendInboundWebhookSecret: process.env.RESEND_INBOUND_WEBHOOK_SECRET ?? "",
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   canonicalOrigin: normalizeCanonicalOrigin(configuredCanonicalOrigin),
   siteName: configuredSiteName || "Ehode",

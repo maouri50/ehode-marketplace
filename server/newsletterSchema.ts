@@ -75,6 +75,25 @@ export async function ensureNewsletterCampaignSchema(db: any) {
       CONSTRAINT \`newsletter_campaign_recipient_unique\` UNIQUE (\`campaignId\`, \`email\`)
     )
   `));
+  // A prior interrupted deployment can leave these tables present but incomplete.
+  // Keep every ALTER additive or definition-tightening so no campaign data is removed.
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `recipientCount` int NOT NULL DEFAULT 0"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `status` enum('draft','sending','sent','partial','failed') NOT NULL DEFAULT 'draft'"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `sentAt` timestamp NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `deliveryError` text NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` ADD COLUMN IF NOT EXISTS `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` MODIFY COLUMN `id` int AUTO_INCREMENT NOT NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` MODIFY COLUMN `recipientCount` int NOT NULL DEFAULT 0"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` MODIFY COLUMN `status` enum('draft','sending','sent','partial','failed') NOT NULL DEFAULT 'draft'"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` MODIFY COLUMN `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaigns` MODIFY COLUMN `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` ADD COLUMN IF NOT EXISTS `subscriptionId` int NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` ADD COLUMN IF NOT EXISTS `resendMessageId` varchar(255) NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` ADD COLUMN IF NOT EXISTS `deliveryError` text NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` ADD COLUMN IF NOT EXISTS `sentAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` MODIFY COLUMN `id` int AUTO_INCREMENT NOT NULL"));
+  await db.execute(sql.raw("ALTER TABLE `newsletterCampaignRecipients` MODIFY COLUMN `sentAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `newsletter_campaign_recipients_campaign_idx` ON `newsletterCampaignRecipients` (`campaignId`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `newsletter_campaigns_status_idx` ON `newsletterCampaigns` (`status`)"));
   await db.execute(sql.raw("CREATE INDEX IF NOT EXISTS `newsletter_campaigns_created_idx` ON `newsletterCampaigns` (`createdAt`)"));

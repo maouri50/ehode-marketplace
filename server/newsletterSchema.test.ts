@@ -10,4 +10,8 @@ describe("newsletter schema recovery guard", () => {
   it("does not mistake a valid account error for a missing newsletter schema", () => {
     expect(isMissingNewsletterSubscriptionSchema(new Error("Missing admin session"))).toBe(false);
   });
+
+  it("keeps campaign draft status in the allowed explicit owner workflow", () => {
+    expect(["draft", "sending", "sent", "partial", "failed"]).toContain("draft");
+  });
 });

@@ -3,11 +3,13 @@ import { clearResponseCookie, getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { adminAuthRouter } from "./routers/adminAuth";
+import { buyerRouter } from "./routers/buyer";
 import { storefrontRouter } from "./routers/storefront";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  buyer: buyerRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

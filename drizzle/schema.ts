@@ -25,6 +25,49 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+/** Buyer identities are separate from Manus-authenticated users and the standalone owner-admin password. */
+export const buyerAccounts = mysqlTable("buyerAccounts", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  displayName: varchar("displayName", { length: 120 }).notNull(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [uniqueIndex("buyer_accounts_email_unique").on(table.email)]);
+
+/** Opaque buyer session tokens are hashed before persistence and revoked by deleting the row. */
+export const buyerSessions = mysqlTable("buyerSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  buyerAccountId: int("buyerAccountId").notNull().references(() => buyerAccounts.id, { onDelete: "cascade" }),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
+}, (table) => [uniqueIndex("buyer_sessions_token_unique").on(table.tokenHash), index("buyer_sessions_account_idx").on(table.buyerAccountId), index("buyer_sessions_expiry_idx").on(table.expiresAt)]);
+
+/** Wishlists are private to the buyer account and hold only real marketplace listings. */
+export const buyerWishlistItems = mysqlTable("buyerWishlistItems", {
+  id: int("id").autoincrement().primaryKey(),
+  buyerAccountId: int("buyerAccountId").notNull().references(() => buyerAccounts.id, { onDelete: "cascade" }),
+  listingId: int("listingId").notNull().references(() => marketplaceListings.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [uniqueIndex("buyer_wishlist_account_listing_unique").on(table.buyerAccountId, table.listingId), index("buyer_wishlist_account_idx").on(table.buyerAccountId), index("buyer_wishlist_listing_idx").on(table.listingId)]);
+
+export const contactMessageStatusValues = ["new", "read", "archived"] as const;
+
+/** Contact messages are private to the owner and are never exposed through public storefront queries. */
+export const contactMessages = mysqlTable("contactMessages", {
+  id: int("id").autoincrement().primaryKey(),
+  buyerAccountId: int("buyerAccountId").references(() => buyerAccounts.id, { onDelete: "set null" }),
+  name: varchar("name", { length: 120 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 180 }).notNull(),
+  message: text("message").notNull(),
+  status: mysqlEnum("status", contactMessageStatusValues).default("new").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("contact_messages_status_idx").on(table.status), index("contact_messages_created_idx").on(table.createdAt), index("contact_messages_account_idx").on(table.buyerAccountId)]);
+
 export const newsletterSubscriptionStatusValues = ["active", "unsubscribed"] as const;
 
 /** Marketing opt-ins are intentionally separate from buyer order emails and remain private to the shop owner. */
@@ -162,6 +205,7 @@ export const marketplaceOrders = mysqlTable("marketplaceOrders", {
   paymentOrderId: varchar("shopifyOrderId", { length: 255 }).notNull(),
   receiptToken: varchar("receiptToken", { length: 128 }).notNull(),
   buyerUserId: int("buyerUserId").references(() => users.id, { onDelete: "set null" }),
+  buyerAccountId: int("buyerAccountId").references(() => buyerAccounts.id, { onDelete: "set null" }),
   buyerEmail: varchar("buyerEmail", { length: 320 }),
   deliveryEmailStatus: varchar("deliveryEmailStatus", { length: 24 }).default("pending").notNull(),
   deliveryEmailMessageId: varchar("deliveryEmailMessageId", { length: 255 }),
@@ -173,7 +217,7 @@ export const marketplaceOrders = mysqlTable("marketplaceOrders", {
   purchasedAt: timestamp("purchasedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, (table) => [uniqueIndex("orders_payment_order_unique").on(table.paymentOrderId), uniqueIndex("orders_receipt_token_unique").on(table.receiptToken), index("orders_buyer_idx").on(table.buyerUserId)]);
+}, (table) => [uniqueIndex("orders_payment_order_unique").on(table.paymentOrderId), uniqueIndex("orders_receipt_token_unique").on(table.receiptToken), index("orders_buyer_idx").on(table.buyerUserId), index("orders_buyer_account_idx").on(table.buyerAccountId)]);
 
 export const marketplaceOrderItems = mysqlTable("marketplaceOrderItems", {
   id: int("id").autoincrement().primaryKey(),
@@ -210,10 +254,11 @@ export const buyerReviews = mysqlTable("buyerReviews", {
   id: int("id").autoincrement().primaryKey(),
   listingId: int("listingId").notNull().references(() => marketplaceListings.id, { onDelete: "cascade" }),
   buyerUserId: int("buyerUserId").references(() => users.id, { onDelete: "set null" }),
+  buyerAccountId: int("buyerAccountId").references(() => buyerAccounts.id, { onDelete: "set null" }),
   orderItemId: int("orderItemId").references(() => marketplaceOrderItems.id, { onDelete: "set null" }),
   rating: int("rating").notNull(),
   body: text("body"),
   status: mysqlEnum("status", reviewStatusValues).default("pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, (table) => [index("reviews_listing_idx").on(table.listingId), index("reviews_buyer_idx").on(table.buyerUserId)]);
+}, (table) => [uniqueIndex("reviews_order_item_unique").on(table.orderItemId), index("reviews_listing_idx").on(table.listingId), index("reviews_buyer_idx").on(table.buyerUserId), index("reviews_buyer_account_idx").on(table.buyerAccountId), index("reviews_status_idx").on(table.status)]);

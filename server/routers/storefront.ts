@@ -3,7 +3,7 @@ import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Resend } from "resend";
 import { z } from "zod";
-import { catalogCategories, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
+import { buyerAccounts, buyerReviews, catalogCategories, contactMessages, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
@@ -13,12 +13,24 @@ import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, sele
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
 import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailures";
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
-import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
 const buyerEmailInput = z.string().trim().email().max(320).transform((value) => value.toLowerCase());
 const newsletterEmailInput = z.string().trim().email().max(320).transform(normalizeNewsletterEmail);
+const contactMessageInput = z.object({
+  name: z.string().trim().min(2).max(120),
+  email: buyerEmailInput,
+  subject: z.string().trim().min(3).max(180),
+  message: z.string().trim().min(10).max(6_000),
+  website: z.string().max(0).optional(),
+});
+const reviewInput = z.object({
+  orderItemId: z.number().int().positive(),
+  rating: z.number().int().min(1).max(5),
+  body: z.string().trim().min(10).max(2_000),
+});
 const newsletterCampaignInput = z.object({
   subject: z.string().trim().min(3).max(180),
   body: z.string().trim().min(10).max(12_000),
@@ -156,6 +168,50 @@ export const storefrontRouter = router({
       return { success: true };
     }),
   }),
+  contact: router({
+    submit: publicProcedure.input(contactMessageInput).mutation(async ({ input, ctx }) => {
+      if (input.website) return { success: true as const };
+      const db = await requireDb();
+      const name = ctx.buyer?.displayName || input.name;
+      const email = ctx.buyer?.email || input.email;
+      await db.insert(contactMessages).values({ buyerAccountId: ctx.buyer?.id ?? null, name, email, subject: input.subject, message: input.message, status: "new" });
+      return { success: true as const };
+    }),
+  }),
+  reviews: router({
+    list: publicProcedure.input(z.object({ listingId: z.number().int().positive() })).query(async ({ input }) => {
+      const db = await requireDb();
+      return db.select({ id: buyerReviews.id, rating: buyerReviews.rating, body: buyerReviews.body, createdAt: buyerReviews.createdAt, displayName: buyerAccounts.displayName })
+        .from(buyerReviews).innerJoin(buyerAccounts, eq(buyerReviews.buyerAccountId, buyerAccounts.id))
+        .where(and(eq(buyerReviews.listingId, input.listingId), eq(buyerReviews.status, "published")))
+        .orderBy(desc(buyerReviews.createdAt)).limit(50);
+    }),
+    eligible: buyerSessionProcedure.query(async ({ ctx }) => {
+      const db = await requireDb();
+      const rows = await db.select({ orderItemId: marketplaceOrderItems.id, listingId: marketplaceListings.id, title: marketplaceOrderItems.title, coverImageUrl: marketplaceListings.coverImageUrl, reviewed: buyerReviews.id })
+        .from(marketplaceOrderItems)
+        .innerJoin(marketplaceOrders, eq(marketplaceOrderItems.orderId, marketplaceOrders.id))
+        .innerJoin(marketplaceListings, eq(marketplaceOrderItems.listingId, marketplaceListings.id))
+        .leftJoin(buyerReviews, eq(buyerReviews.orderItemId, marketplaceOrderItems.id))
+        .where(and(eq(marketplaceOrders.buyerAccountId, ctx.buyer.id), inArray(marketplaceOrders.status, ["paid", "fulfilled"])))
+        .orderBy(desc(marketplaceOrders.purchasedAt));
+      return rows.filter((row) => !row.reviewed).map((row) => ({ ...row, coverImageUrl: publicCoverUrl(row.listingId, row.coverImageUrl) }));
+    }),
+    submit: buyerSessionProcedure.input(reviewInput).mutation(async ({ input, ctx }) => {
+      const db = await requireDb();
+      const rows = await db.select({ orderItemId: marketplaceOrderItems.id, listingId: marketplaceOrderItems.listingId, reviewId: buyerReviews.id })
+        .from(marketplaceOrderItems)
+        .innerJoin(marketplaceOrders, eq(marketplaceOrderItems.orderId, marketplaceOrders.id))
+        .leftJoin(buyerReviews, eq(buyerReviews.orderItemId, marketplaceOrderItems.id))
+        .where(and(eq(marketplaceOrderItems.id, input.orderItemId), eq(marketplaceOrders.buyerAccountId, ctx.buyer.id), inArray(marketplaceOrders.status, ["paid", "fulfilled"])))
+        .limit(1);
+      const purchase = rows[0];
+      if (!purchase?.listingId) throw new TRPCError({ code: "FORBIDDEN", message: "Only purchased resources can be reviewed." });
+      if (purchase.reviewId) throw new TRPCError({ code: "CONFLICT", message: "A review has already been submitted for this purchase." });
+      await db.insert(buyerReviews).values({ listingId: purchase.listingId, buyerAccountId: ctx.buyer.id, orderItemId: purchase.orderItemId, rating: input.rating, body: input.body, status: "pending" });
+      return { success: true as const, message: "Thank you. Your review will appear after owner approval." };
+    }),
+  }),
   paypal: router({
     config: publicProcedure.query(() => ({ clientId: ENV.paypalClientId, mode: ENV.paypalMode })),
     createOrder: publicProcedure.input(z.object({ items: z.array(cartInput).min(1).max(20), buyerEmail: buyerEmailInput })).mutation(async ({ input }) => {
@@ -197,7 +253,8 @@ export const storefrontRouter = router({
       if (existing[0]) return { orderId: existing[0].id, receiptToken: existing[0].receiptToken, alreadyCaptured: true };
       const receiptToken = nanoid(40);
       const resolvedBuyerEmail = resolveBuyerEmail(input.buyerEmail, captured.payer?.email_address);
-      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerEmail: resolvedBuyerEmail, deliveryEmailStatus: "pending", currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
+      const buyerAccountId = ctx.buyer?.email === resolvedBuyerEmail ? ctx.buyer.id : null;
+      const insertedOrder = await db.insert(marketplaceOrders).values({ paymentOrderId: input.paypalOrderId, receiptToken, buyerUserId: ctx.user?.id, buyerAccountId, buyerEmail: resolvedBuyerEmail, deliveryEmailStatus: "pending", currencyCode, totalAmount: money(paidAmount), status: "paid", purchasedAt: new Date() });
       const orderId = Number((insertedOrder as any)[0]?.insertId);
       for (const item of items) {
         const listing = listings.find((candidate) => candidate.id === item.listingId)!;
@@ -230,6 +287,26 @@ export const storefrontRouter = router({
     }),
   }),
   owner: router({
+    contactMessages: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt)).limit(100);
+    }),
+    setContactMessageStatus: adminSessionProcedure.input(z.object({ messageId: z.number().int().positive(), status: z.enum(["new", "read", "archived"]) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      await db.update(contactMessages).set({ status: input.status }).where(eq(contactMessages.id, input.messageId));
+      return { success: true as const };
+    }),
+    reviews: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      return db.select({ id: buyerReviews.id, rating: buyerReviews.rating, body: buyerReviews.body, status: buyerReviews.status, createdAt: buyerReviews.createdAt, listingTitle: marketplaceListings.title, buyerDisplayName: buyerAccounts.displayName, buyerEmail: buyerAccounts.email })
+        .from(buyerReviews).leftJoin(marketplaceListings, eq(buyerReviews.listingId, marketplaceListings.id)).leftJoin(buyerAccounts, eq(buyerReviews.buyerAccountId, buyerAccounts.id))
+        .orderBy(desc(buyerReviews.createdAt)).limit(100);
+    }),
+    setReviewStatus: adminSessionProcedure.input(z.object({ reviewId: z.number().int().positive(), status: z.enum(["pending", "published", "hidden"]) })).mutation(async ({ input }) => {
+      const db = await requireDb();
+      await db.update(buyerReviews).set({ status: input.status }).where(eq(buyerReviews.id, input.reviewId));
+      return { success: true as const };
+    }),
     newsletterSubscribers: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       await ensureNewsletterSubscriptionSchema(db);

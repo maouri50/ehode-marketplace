@@ -11,6 +11,9 @@ import Downloads from "./pages/Downloads";
 import Admin from "./pages/Admin";
 import AdminNewsletter from "./pages/AdminNewsletter";
 import NewsletterUnsubscribe from "./pages/NewsletterUnsubscribe";
+import Account from "./pages/Account";
+import Contact from "./pages/Contact";
+import AdminCommunity from "./pages/AdminCommunity";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 function Router() {
@@ -23,6 +26,9 @@ function Router() {
       <Route path={"/owner"}><Redirect to="/admin" /></Route>
       <Route path={"/admin"} component={Admin} />
       <Route path={"/admin/newsletter"} component={AdminNewsletter} />
+      <Route path={"/admin/community"} component={AdminCommunity} />
+      <Route path={"/account"} component={Account} />
+      <Route path={"/contact"} component={Contact} />
       <Route path={"/newsletter/unsubscribe/:token"} component={NewsletterUnsubscribe} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />
       <Route path={"/404"} component={NotFound} />

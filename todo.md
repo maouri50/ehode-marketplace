@@ -196,3 +196,19 @@
 - [x] Set the forwarded message Reply-To header to the original inbound sender so owner replies return to that person, with recipient validation and no automatic replies.
 - [x] Preserve safe inbound attachments in the customized forwarding message with bounded ephemeral retrieval and no application storage.
 - [x] Test sender visibility, reply routing, invalid sender handling, and existing signature/idempotency safeguards before deployment.
+- [x] Stop the Gmail Send mail as setup at the owner’s request; do not continue the mail-client sender-identity route.
+- [x] Do not configure an Ehode sender identity in Gmail because the owner stopped this setup.
+- [x] Do not perform the Gmail manual-reply verification because the owner stopped this setup.
+- [x] Do not continue Gmail Send mail as confirmation because the owner stopped this setup.
+- [x] Add a public Contact Me page with a private, spam-resistant contact-message submission flow and owner-only message visibility.
+- [x] Add purchase-verified customer review submission linked to an actual completed order, with one review per product purchase and no buyer account requirement.
+- [x] Add private admin review moderation controls so only owner-approved genuine reviews can appear publicly.
+- [x] Add public approved-review display that never fabricates, seeds, or hardcodes ratings, reviews, or testimonials.
+- [x] Test contact privacy, buyer eligibility, duplicate-review prevention, moderation, and public review visibility on desktop and mobile.
+- [x] Add real buyer account registration, login, logout, and secure password storage without changing the standalone owner-admin password flow.
+- [x] Add a buyer account area for order-linked download access and purchase-verified review eligibility.
+- [x] Add a visible Create Account / Log In control to the public Ehode header, with responsive phone behavior.
+- [x] Test buyer account privacy, authentication, session handling, existing purchase access, and mobile layout before publishing.
+- [x] Add an account-linked wishlist that lets signed-in buyers save and remove real Ehode products without public visibility.
+- [x] Add real product-sharing links for supported social channels and copyable product URLs without fabricating share counts or engagement.
+- [x] Test wishlist ownership, unauthenticated handling, sharing links, and mobile product-page presentation.

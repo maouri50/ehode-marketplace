@@ -28,6 +28,13 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
+export const buyerSessionProcedure = t.procedure.use(
+  t.middleware(async ({ ctx, next }) => {
+    if (!ctx.buyer) throw new TRPCError({ code: "UNAUTHORIZED", message: "Please sign in to your buyer account." });
+    return next({ ctx: { ...ctx, buyer: ctx.buyer } });
+  }),
+);
+
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;

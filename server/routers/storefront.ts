@@ -11,7 +11,7 @@ import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
 import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow } from "../newsletterCampaign";
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
-import { ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
+import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -209,14 +209,17 @@ export const storefrontRouter = router({
   owner: router({
     newsletterSubscribers: adminSessionProcedure.query(async () => {
       const db = await requireDb();
+      await ensureNewsletterSubscriptionSchema(db);
       return db.select({ id: newsletterSubscriptions.id, email: newsletterSubscriptions.email, status: newsletterSubscriptions.status, consentedAt: newsletterSubscriptions.consentedAt }).from(newsletterSubscriptions).orderBy(desc(newsletterSubscriptions.consentedAt)).limit(250);
     }),
     newsletterCampaigns: adminSessionProcedure.query(async () => {
       const db = await requireDb();
+      await ensureNewsletterCampaignSchema(db);
       return db.select().from(newsletterCampaigns).orderBy(desc(newsletterCampaigns.createdAt)).limit(50);
     }),
     createNewsletterCampaign: adminSessionProcedure.input(newsletterCampaignInput).mutation(async ({ input }) => {
       const db = await requireDb();
+      await ensureNewsletterCampaignSchema(db);
       try {
         return await createNewsletterCampaignDraft(createNewsletterCampaignDatabaseStore(db), input);
       } catch (error) {
@@ -225,6 +228,7 @@ export const storefrontRouter = router({
     }),
     sendNewsletterCampaign: adminSessionProcedure.input(z.object({ campaignId: z.number().int().positive(), confirmation: newsletterCampaignSendConfirmation })).mutation(async ({ input }) => {
       const db = await requireDb();
+      await ensureNewsletterCampaignSchema(db);
       if (!ENV.resendApiKey || !ENV.resendFromEmail) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Newsletter email is not configured yet." });
       const resend = new Resend(ENV.resendApiKey);
       try {

@@ -14,6 +14,7 @@ import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignData
 import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailures";
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
 import { ensureBuyerFeatureSchema } from "../buyerSchema";
+import { buildVerifiedReviewPublication } from "../reviewPublication";
 import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -215,8 +216,8 @@ export const storefrontRouter = router({
       const purchase = rows[0];
       if (!purchase?.listingId) throw new TRPCError({ code: "FORBIDDEN", message: "Only purchased resources can be reviewed." });
       if (purchase.reviewId) throw new TRPCError({ code: "CONFLICT", message: "A review has already been submitted for this purchase." });
-      await db.insert(buyerReviews).values({ listingId: purchase.listingId, buyerAccountId: ctx.buyer.id, orderItemId: purchase.orderItemId, rating: input.rating, body: input.body, status: "pending" });
-      return { success: true as const, message: "Thank you. Your review will appear after owner approval." };
+      await db.insert(buyerReviews).values(buildVerifiedReviewPublication({ listingId: purchase.listingId, buyerAccountId: ctx.buyer.id, orderItemId: purchase.orderItemId, rating: input.rating, body: input.body }));
+      return { success: true as const, message: "Thank you. Your verified review is now live." };
     }),
   }),
   paypal: router({

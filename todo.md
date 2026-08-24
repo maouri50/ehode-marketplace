@@ -215,4 +215,7 @@
 - [ ] Verify buyer account registration and login using a genuine owner-approved purchaser account without retaining a test account.
 - [ ] Verify review eligibility is limited to a real completed purchase and submit no synthetic review, rating, or testimonial.
 - [ ] Verify owner-only review moderation and public approved-review visibility using only genuine customer feedback.
-- [ ] Repair the missing Production buyer-account and customer-feature database tables so real account creation no longer exposes a database error.
+- [x] Repair the missing Production buyer-account and customer-feature database tables so real account creation no longer exposes a database error.
+- [x] Remove the public Verified buyer notes copy from product review sections.
+- [x] Automatically publish a review only when it is submitted through a verified completed purchase, while keeping synthetic and unverified reviews blocked.
+- [x] Test that a verified purchaser review becomes publicly visible immediately and unverified review attempts remain blocked.

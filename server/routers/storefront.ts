@@ -13,6 +13,7 @@ import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, sele
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
 import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailures";
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
+import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -59,6 +60,12 @@ function publicCoverUrl(listingId: number, coverImageUrl: string | null) {
 async function requireDb() {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "The catalog database is unavailable." });
+  return db;
+}
+
+async function requireBuyerFeatureDb() {
+  const db = await requireDb();
+  await ensureBuyerFeatureSchema(db);
   return db;
 }
 
@@ -171,7 +178,7 @@ export const storefrontRouter = router({
   contact: router({
     submit: publicProcedure.input(contactMessageInput).mutation(async ({ input, ctx }) => {
       if (input.website) return { success: true as const };
-      const db = await requireDb();
+      const db = await requireBuyerFeatureDb();
       const name = ctx.buyer?.displayName || input.name;
       const email = ctx.buyer?.email || input.email;
       await db.insert(contactMessages).values({ buyerAccountId: ctx.buyer?.id ?? null, name, email, subject: input.subject, message: input.message, status: "new" });
@@ -180,14 +187,14 @@ export const storefrontRouter = router({
   }),
   reviews: router({
     list: publicProcedure.input(z.object({ listingId: z.number().int().positive() })).query(async ({ input }) => {
-      const db = await requireDb();
+      const db = await requireBuyerFeatureDb();
       return db.select({ id: buyerReviews.id, rating: buyerReviews.rating, body: buyerReviews.body, createdAt: buyerReviews.createdAt, displayName: buyerAccounts.displayName })
         .from(buyerReviews).innerJoin(buyerAccounts, eq(buyerReviews.buyerAccountId, buyerAccounts.id))
         .where(and(eq(buyerReviews.listingId, input.listingId), eq(buyerReviews.status, "published")))
         .orderBy(desc(buyerReviews.createdAt)).limit(50);
     }),
     eligible: buyerSessionProcedure.query(async ({ ctx }) => {
-      const db = await requireDb();
+      const db = await requireBuyerFeatureDb();
       const rows = await db.select({ orderItemId: marketplaceOrderItems.id, listingId: marketplaceListings.id, title: marketplaceOrderItems.title, coverImageUrl: marketplaceListings.coverImageUrl, reviewed: buyerReviews.id })
         .from(marketplaceOrderItems)
         .innerJoin(marketplaceOrders, eq(marketplaceOrderItems.orderId, marketplaceOrders.id))
@@ -198,7 +205,7 @@ export const storefrontRouter = router({
       return rows.filter((row) => !row.reviewed).map((row) => ({ ...row, coverImageUrl: publicCoverUrl(row.listingId, row.coverImageUrl) }));
     }),
     submit: buyerSessionProcedure.input(reviewInput).mutation(async ({ input, ctx }) => {
-      const db = await requireDb();
+      const db = await requireBuyerFeatureDb();
       const rows = await db.select({ orderItemId: marketplaceOrderItems.id, listingId: marketplaceOrderItems.listingId, reviewId: buyerReviews.id })
         .from(marketplaceOrderItems)
         .innerJoin(marketplaceOrders, eq(marketplaceOrderItems.orderId, marketplaceOrders.id))

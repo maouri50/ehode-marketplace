@@ -215,3 +215,4 @@
 - [ ] Verify buyer account registration and login using a genuine owner-approved purchaser account without retaining a test account.
 - [ ] Verify review eligibility is limited to a real completed purchase and submit no synthetic review, rating, or testimonial.
 - [ ] Verify owner-only review moderation and public approved-review visibility using only genuine customer feedback.
+- [ ] Repair the missing Production buyer-account and customer-feature database tables so real account creation no longer exposes a database error.

@@ -3,6 +3,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { buyerWishlistItems, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, productAssets } from "../../drizzle/schema";
 import { clearBuyerSession, loginBuyerAccount, registerBuyerAccount, setBuyerSession } from "../buyerAuth";
+import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { getDb } from "../db";
 import { buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 
@@ -13,6 +14,7 @@ const buyerName = z.string().trim().min(2).max(120);
 async function requireDb() {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Buyer accounts are temporarily unavailable." });
+  await ensureBuyerFeatureSchema(db);
   return db;
 }
 

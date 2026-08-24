@@ -4,6 +4,7 @@ import { buyerAccounts, buyerSessions, marketplaceOrders } from "../drizzle/sche
 import { getDb } from "./db";
 import { clearResponseCookie, setResponseCookie } from "./_core/cookies";
 import { ENV } from "./_core/env";
+import { ensureBuyerFeatureSchema } from "./buyerSchema";
 
 export const BUYER_SESSION_COOKIE = "ehode_buyer_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
@@ -51,6 +52,7 @@ function identity(account: typeof buyerAccounts.$inferSelect): BuyerIdentity {
 async function requireDb() {
   const db = await getDb();
   if (!db) throw new Error("Buyer accounts are temporarily unavailable.");
+  await ensureBuyerFeatureSchema(db);
   return db;
 }
 
@@ -59,6 +61,7 @@ export async function getBuyerIdentityFromRequest(req: CookieRequest): Promise<B
   if (!token || token.length < 30) return null;
   const db = await getDb();
   if (!db) return null;
+  await ensureBuyerFeatureSchema(db);
   const rows = await db.select({ account: buyerAccounts }).from(buyerSessions)
     .innerJoin(buyerAccounts, eq(buyerSessions.buyerAccountId, buyerAccounts.id))
     .where(and(eq(buyerSessions.tokenHash, tokenHash(token)), gt(buyerSessions.expiresAt, new Date())))

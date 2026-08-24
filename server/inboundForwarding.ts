@@ -1,4 +1,4 @@
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Application, type Request, type Response } from "express";
 import { Resend } from "resend";
 import { ENV } from "./_core/env";
 
@@ -94,7 +94,7 @@ export async function handleInboundForwardingWebhook(request: Request, response:
   }
 }
 
-export function registerInboundForwardingRoutes(app: Express) {
+export function registerInboundForwardingRoutes(app: Application) {
   app.post(inboundForwardingWebhookPath, express.raw({ type: "application/json", limit: "256kb" }), (request, response) => {
     void handleInboundForwardingWebhook(request, response);
   });

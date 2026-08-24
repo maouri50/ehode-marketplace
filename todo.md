@@ -184,4 +184,5 @@
 - [x] Fix the Vercel-only Express response cookie typing failure so the Production inbound release can complete its build.
 - [x] Update the logout test response stub for the portable Set-Cookie header helper and restore full regression coverage.
 - [x] Preserve PayPal credential verification in the sandbox by replacing the timed-out native fetch test transport with a compatible HTTPS client.
+- [x] Fix the Vercel-only Express route registration type so the inbound webhook handler can complete the Production build.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

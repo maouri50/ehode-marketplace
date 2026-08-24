@@ -156,6 +156,7 @@
 - [x] Match the admin email preview and phone layout to the new product-showcase template without fabricating ratings or reviews.
 - [x] Verify the product-showcase template output without sending a campaign.
 - [x] Remove all price display from the Product Showcase email and its admin preview while retaining real product images, titles, links, and the Explore All CTA.
+- [x] Create a downloadable PDF newsletter-signup sample with a visual email field, QR code, and linked secure Ehode signup action.
 - [ ] Inspect the failed newsletter delivery reason for the owner-sent campaign without retrieving subscriber email addresses or retrying delivery.
 - [ ] Fix any campaign-delivery configuration or error-handling issue identified, without sending another email automatically.
 - [x] Add an owner-only sanitized delivery-failure summary in campaign history that never includes subscriber email addresses or triggers a retry.

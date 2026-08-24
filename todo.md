@@ -189,4 +189,5 @@
 - [x] Replace the Vercel-incompatible free-download response header call with the portable response-header helper so the Production build can complete.
 - [x] Replace the Vercel-incompatible Express request type in cookie security detection with a structural request shape so the Production build can complete.
 - [ ] Diagnose and correct the provider forwarding request so the verified inbound webhook can complete owner-only forwarding without exposing message content.
+- [x] Make the provider-rejection diagnostic response use the portable response shape required by Vercel’s Production type build.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

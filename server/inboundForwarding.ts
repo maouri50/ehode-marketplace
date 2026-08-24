@@ -1,4 +1,4 @@
-import express, { type Application, type Request, type Response } from "express";
+import express, { type Application, type Request } from "express";
 import { Resend } from "resend";
 import { ENV } from "./_core/env";
 
@@ -8,6 +8,12 @@ export const inboundForwardingWebhookPath = "/api/email/inbound";
 type InboundWebhookDelivery = {
   emailId: string;
   recipients: string[];
+};
+
+type InboundWebhookResponse = {
+  status(code: number): InboundWebhookResponse;
+  json(body: unknown): InboundWebhookResponse;
+  end(): InboundWebhookResponse;
 };
 
 /** Returns the private forwarding address only for server-side use. */
@@ -53,7 +59,7 @@ function webhookHeaders(request: Request) {
   return id && timestamp && signature ? { id, timestamp, signature } : null;
 }
 
-export async function handleInboundForwardingWebhook(request: Request, response: Response) {
+export async function handleInboundForwardingWebhook(request: Request, response: InboundWebhookResponse) {
   const headers = webhookHeaders(request);
   const payload = Buffer.isBuffer(request.body) ? request.body.toString("utf8") : "";
   if (!headers || !payload) return response.status(400).json({ accepted: false });

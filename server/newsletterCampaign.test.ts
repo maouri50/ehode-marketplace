@@ -48,6 +48,13 @@ describe("newsletter campaigns", () => {
     expect(events).toEqual(["draft:2"]);
   });
 
+  it("allows a zero-subscriber draft while keeping delivery unavailable", async () => {
+    const { store, events } = campaignStore();
+    store.countActiveSubscribers = async () => 0;
+    await expect(createNewsletterCampaignDraft(store, { subject: "Future update", body: "This can be written before signups arrive." })).resolves.toEqual({ id: 41, recipientCount: 0 });
+    expect(events).toEqual(["draft:0"]);
+  });
+
   it("filters mixed subscriber records to opted-in recipients before delivery", async () => {
     const selected = selectActiveCampaignRecipients([
       { id: 1, email: "active@example.com", unsubscribeToken: "a", status: "active" },
@@ -69,5 +76,13 @@ describe("newsletter campaigns", () => {
     expect(events).toContain("token:2");
     expect(events).toContain("complete:sent:2");
     expect(recipients).toEqual([{ email: "active@example.com", status: "sent" }, { email: "second@example.com", status: "sent" }]);
+  });
+
+  it("keeps a zero-subscriber draft unsent even with a SEND confirmation", async () => {
+    const { store, events } = campaignStore();
+    store.activeSubscribers = async () => [];
+    const mailer = { send: async () => ({ id: "should-not-send" }) };
+    await expect(sendNewsletterCampaignNow({ campaignId: 41, confirmation: "SEND", canonicalOrigin: "https://ehode.com", store, mailer, makeToken: () => "new-token" })).rejects.toThrow("There are no active newsletter subscribers");
+    expect(events).not.toContain("claim");
   });
 });

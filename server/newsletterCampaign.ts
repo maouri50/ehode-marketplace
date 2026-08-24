@@ -44,17 +44,17 @@ export function summarizeCampaignDelivery(result: { sent: number; failed: number
 
 export async function createNewsletterCampaignDraft(store: Pick<NewsletterCampaignStore, "countActiveSubscribers" | "createDraft">, input: { subject: string; body: string }) {
   const recipientCount = await store.countActiveSubscribers();
-  if (recipientCount === 0) throw new Error("There are no active newsletter subscribers yet.");
   const id = await store.createDraft({ ...input, recipientCount });
   return { id, recipientCount };
 }
 
 export async function sendNewsletterCampaignNow(input: { campaignId: number; confirmation: string; canonicalOrigin: string; store: Pick<NewsletterCampaignStore, "claimDraft" | "getCampaign" | "activeSubscribers" | "setUnsubscribeToken" | "recordRecipient" | "completeCampaign">; mailer: NewsletterCampaignMailer; makeToken: () => string }) {
   if (input.confirmation !== "SEND") throw new Error("Campaign delivery requires the exact SEND confirmation.");
+  const recipients = await input.store.activeSubscribers();
+  if (recipients.length === 0) throw new Error("There are no active newsletter subscribers to receive this campaign.");
   if (!await input.store.claimDraft(input.campaignId)) throw new Error("This campaign is no longer an unsent draft.");
   const campaign = await input.store.getCampaign(input.campaignId);
   if (!campaign) throw new Error("Campaign not found.");
-  const recipients = await input.store.activeSubscribers();
   let sent = 0;
   let failed = 0;
   for (const recipient of recipients) {

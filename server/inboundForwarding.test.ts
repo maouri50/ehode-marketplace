@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const verifyWebhook = vi.fn();
@@ -52,6 +53,19 @@ describe("inbound forwarding configuration", () => {
   it("reads the project webhook-secret key while retaining compatibility with the dedicated key", () => {
     expect(resolveInboundWebhookSecret({ RESEND_WEBHOOK_SECRET: "whsec_project_key" } as NodeJS.ProcessEnv)).toBe("whsec_project_key");
     expect(resolveInboundWebhookSecret({ RESEND_INBOUND_WEBHOOK_SECRET: "whsec_dedicated_key", RESEND_WEBHOOK_SECRET: "whsec_project_key" } as NodeJS.ProcessEnv)).toBe("whsec_dedicated_key");
+  });
+
+  it("routes the public inbound path through the bundled Vercel handler", () => {
+    const entry = readFileSync(new URL("../api/entry.ts", import.meta.url), "utf8");
+    const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+    const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+
+    expect(entry).toContain('import app from "./handler.mjs"');
+    expect(packageJson.scripts.build).toContain("esbuild api/bundle.ts");
+    expect(vercelConfig.rewrites).toContainEqual({
+      source: "/api/email/inbound",
+      destination: "/api/entry",
+    });
   });
 
   it("accepts the configured private forwarding destination without exposing its value", () => {

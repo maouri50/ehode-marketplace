@@ -104,7 +104,7 @@
     }
   },
   "scripts": {
-    "build": "vite build && esbuild api/entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/handler.mjs && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "vite build && esbuild api/bundle.ts --platform=node --packages=external --bundle --format=esm --outfile=api/handler.mjs && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "check": "tsc --noEmit",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",

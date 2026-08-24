@@ -1,5 +1,6 @@
-import { createEhodeHttpApp } from "../server/httpApp";
+// Vercel executes this source file as native Node ESM. Import the bundled
+// handler with its explicit extension so it does not need to resolve TypeScript
+// server modules from outside the function bundle at runtime.
+import app from "./handler.mjs";
 
-// This entry is bundled during `pnpm build`. The resulting single-file handler
-// prevents Vercel from resolving server modules outside the API function bundle.
-export default createEhodeHttpApp();
+export default app;

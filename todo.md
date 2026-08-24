@@ -177,4 +177,8 @@
 - [x] Add secret-safe server logging that identifies only which required forwarding configuration names are absent from the live runtime.
 - [x] Return only missing configuration names to a signature-verified provider webhook when production logs are unavailable, without exposing values to unsigned requests.
 - [x] Normalize the private forwarding destination to a single mailbox address before validating or passing it to the provider.
+- [ ] Confirm the exact active Ehode deployment URL that serves the current inbound handler, then align the Resend webhook target to that deployment.
+- [ ] Promote the verified inbound forwarding release to an externally reachable Vercel Production deployment because the preview URL is protected by Vercel SSO.
+- [x] Fix the Vercel production entry module import so the public inbound handler can start under Node ESM.
+- [x] Separate the Vercel handler bundle source from its generated output so production builds do not overwrite an active input module.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

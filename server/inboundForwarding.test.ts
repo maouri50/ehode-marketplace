@@ -49,6 +49,25 @@ describe("inbound forwarding configuration", () => {
     expect(getInboundForwardingDestination().length).toBeGreaterThan(5);
   });
 
+  it("uses the configured signing secret when the inbound endpoint validates a safe non-forwarded event", async () => {
+    Object.assign(ENV, {
+      resendApiKey: "server-key",
+      resendFromEmail: "Ehode <hello@mail.ehode.com>",
+      inboundForwardTo: "owner@example.com",
+      resendInboundWebhookSecret: "whsec_runtime_configuration_check",
+    });
+    verifyWebhook.mockImplementation((options: { webhookSecret: string }) => {
+      expect(options.webhookSecret).toBe("whsec_runtime_configuration_check");
+      return { type: "email.received", data: { email_id: "configuration-check", to: ["other@mail.ehode.com"] } };
+    });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
+
+    expect(state.code).toBe(204);
+    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+  });
+
   it("accepts only a signed inbound event with a usable provider email ID", () => {
     expect(parseInboundWebhookDelivery({ type: "email.received", data: { email_id: "inbound-123", to: ["Newsletter <hello@mail.ehode.com>"] } })).toEqual({ emailId: "inbound-123", recipients: ["hello@mail.ehode.com"] });
     expect(parseInboundWebhookDelivery({ type: "email.sent", data: { email_id: "inbound-123", to: ["hello@mail.ehode.com"] } })).toBeNull();

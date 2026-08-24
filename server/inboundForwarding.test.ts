@@ -59,6 +59,12 @@ describe("inbound forwarding configuration", () => {
     expect(getInboundForwardingDestination().length).toBeGreaterThan(5);
   });
 
+  it("normalizes a display-name forwarding destination to its single mailbox address", () => {
+    ENV.inboundForwardTo = "Owner <owner@example.com>";
+    expect(getInboundForwardingDestination()).toBe("owner@example.com");
+    expect(hasInboundForwardingDestination()).toBe(true);
+  });
+
   it("reports only missing configuration names without exposing secret values", () => {
     Object.assign(ENV, { resendApiKey: "", resendFromEmail: "", inboundForwardTo: "", resendInboundWebhookSecret: "" });
     expect(missingInboundForwardingConfigurationNames()).toEqual([

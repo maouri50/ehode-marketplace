@@ -12,7 +12,7 @@ type InboundWebhookDelivery = {
 
 /** Returns the private forwarding address only for server-side use. */
 export function getInboundForwardingDestination() {
-  return ENV.inboundForwardTo;
+  return mailboxAddress(ENV.inboundForwardTo);
 }
 
 export function hasInboundForwardingDestination() {

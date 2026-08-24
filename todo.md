@@ -176,4 +176,5 @@
 - [x] Normalize angle-bracket characters escaped by the project secret UI in the configured Ehode sender address.
 - [x] Add secret-safe server logging that identifies only which required forwarding configuration names are absent from the live runtime.
 - [x] Return only missing configuration names to a signature-verified provider webhook when production logs are unavailable, without exposing values to unsigned requests.
+- [x] Normalize the private forwarding destination to a single mailbox address before validating or passing it to the provider.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

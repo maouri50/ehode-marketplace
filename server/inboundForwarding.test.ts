@@ -15,7 +15,7 @@ vi.mock("resend", () => ({
 }));
 
 import { ENV, normalizeResendFromEmail, resolveInboundWebhookSecret } from "./_core/env";
-import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, parseInboundWebhookDelivery } from "./inboundForwarding";
+import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, missingInboundForwardingConfigurationNames, parseInboundWebhookDelivery } from "./inboundForwarding";
 
 function webhookRequest(payload: string) {
   return {
@@ -57,6 +57,16 @@ describe("inbound forwarding configuration", () => {
   it("accepts the configured private forwarding destination without exposing its value", () => {
     expect(hasInboundForwardingDestination()).toBe(true);
     expect(getInboundForwardingDestination().length).toBeGreaterThan(5);
+  });
+
+  it("reports only missing configuration names without exposing secret values", () => {
+    Object.assign(ENV, { resendApiKey: "", resendFromEmail: "", inboundForwardTo: "", resendInboundWebhookSecret: "" });
+    expect(missingInboundForwardingConfigurationNames()).toEqual([
+      "RESEND_API_KEY",
+      "RESEND_FROM_EMAIL",
+      "RESEND_WEBHOOK_SECRET",
+      "INBOUND_FORWARD_TO",
+    ]);
   });
 
   it("has a verified Ehode sender address configured for provider forwarding", () => {

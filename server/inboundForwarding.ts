@@ -37,8 +37,13 @@ export function isNewsletterRecipient(recipients: string[], configuredSender: st
   return Boolean(expected) && recipients.includes(expected);
 }
 
-function inboundForwardingIsConfigured() {
-  return Boolean(ENV.resendApiKey && ENV.resendFromEmail && ENV.resendInboundWebhookSecret && hasInboundForwardingDestination());
+export function missingInboundForwardingConfigurationNames() {
+  return [
+    !ENV.resendApiKey ? "RESEND_API_KEY" : null,
+    !ENV.resendFromEmail ? "RESEND_FROM_EMAIL" : null,
+    !ENV.resendInboundWebhookSecret ? "RESEND_WEBHOOK_SECRET" : null,
+    !hasInboundForwardingDestination() ? "INBOUND_FORWARD_TO" : null,
+  ].filter((name): name is string => Boolean(name));
 }
 
 function webhookHeaders(request: Request) {
@@ -49,7 +54,11 @@ function webhookHeaders(request: Request) {
 }
 
 export async function handleInboundForwardingWebhook(request: Request, response: Response) {
-  if (!inboundForwardingIsConfigured()) return response.status(503).json({ accepted: false });
+  const missingConfiguration = missingInboundForwardingConfigurationNames();
+  if (missingConfiguration.length) {
+    console.error("[Inbound email forwarding] Required configuration is unavailable", missingConfiguration.join(", "));
+    return response.status(503).json({ accepted: false });
+  }
   const headers = webhookHeaders(request);
   const payload = Buffer.isBuffer(request.body) ? request.body.toString("utf8") : "";
   if (!headers || !payload) return response.status(400).json({ accepted: false });

@@ -174,4 +174,5 @@
 - [x] Validate inbound event signatures, ignore duplicate deliveries, enforce recipient filtering and size limits, and never create an automatic reply.
 - [x] Accept the saved project webhook-secret key in the server environment mapping so the deployed inbound endpoint can validate provider events.
 - [x] Normalize angle-bracket characters escaped by the project secret UI in the configured Ehode sender address.
+- [x] Add secret-safe server logging that identifies only which required forwarding configuration names are absent from the live runtime.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

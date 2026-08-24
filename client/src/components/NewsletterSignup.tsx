@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, Mail } from "lucide-react";
 
 export function NewsletterSignup() {
@@ -12,6 +12,14 @@ export function NewsletterSignup() {
     },
     onError: (error) => setMessage(error.message || "Newsletter signup is temporarily unavailable. Please try again shortly."),
   });
+
+  useEffect(() => {
+    if (window.location.hash !== "#newsletter") return;
+    const animationFrame = window.requestAnimationFrame(() => {
+      document.getElementById("newsletter")?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, []);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -230,3 +230,6 @@
 - [x] Connect www.ehode.com to Google Analytics and provide the owner a clear visitor and traffic-reporting location.
 - [x] Add a visitor-controlled analytics consent notice and Google Analytics disclosure before public tracking begins.
 - [x] Resolve the Vercel-only buyer session cookie type mismatch that blocked the Google Analytics Production deployment.
+- [x] Remove the Google Analytics consent interface and load analytics automatically on public Ehode visits at the owner’s request.
+- [x] Repair the public homepage hero image so it loads without broken-image text on phone and desktop.
+- [x] Forward each new Contact form submission privately to the owner’s configured personal email without exposing that destination to visitors.

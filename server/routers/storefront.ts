@@ -16,6 +16,7 @@ import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isM
 import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { buildVerifiedReviewPublication } from "../reviewPublication";
 import { ensureLegacyCatalogRecovery } from "../legacyCatalogRecovery";
+import { forwardContactMessage } from "../contactForwarding";
 import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -187,6 +188,7 @@ export const storefrontRouter = router({
       const name = ctx.buyer?.displayName || input.name;
       const email = ctx.buyer?.email || input.email;
       await db.insert(contactMessages).values({ buyerAccountId: ctx.buyer?.id ?? null, name, email, subject: input.subject, message: input.message, status: "new" });
+      await forwardContactMessage({ name, email, subject: input.subject, message: input.message });
       return { success: true as const };
     }),
   }),

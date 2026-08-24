@@ -177,8 +177,8 @@
 - [x] Add secret-safe server logging that identifies only which required forwarding configuration names are absent from the live runtime.
 - [x] Return only missing configuration names to a signature-verified provider webhook when production logs are unavailable, without exposing values to unsigned requests.
 - [x] Normalize the private forwarding destination to a single mailbox address before validating or passing it to the provider.
-- [ ] Confirm the exact active Ehode deployment URL that serves the current inbound handler, then align the Resend webhook target to that deployment.
-- [ ] Promote the verified inbound forwarding release to an externally reachable Vercel Production deployment because the preview URL is protected by Vercel SSO.
+- [x] Confirm the exact active Ehode deployment URL that serves the current inbound handler, then align the Resend webhook target to that deployment.
+- [x] Promote the verified inbound forwarding release to an externally reachable Vercel Production deployment because the preview URL is protected by Vercel SSO.
 - [x] Fix the Vercel production entry module import so the public inbound handler can start under Node ESM.
 - [x] Separate the Vercel handler bundle source from its generated output so production builds do not overwrite an active input module.
 - [x] Fix the Vercel-only Express response cookie typing failure so the Production inbound release can complete its build.
@@ -188,6 +188,7 @@
 - [x] Fix the Vercel-only Express route registration type so the inbound webhook handler can complete the Production build.
 - [x] Replace the Vercel-incompatible free-download response header call with the portable response-header helper so the Production build can complete.
 - [x] Replace the Vercel-incompatible Express request type in cookie security detection with a structural request shape so the Production build can complete.
-- [ ] Diagnose and correct the provider forwarding request so the verified inbound webhook can complete owner-only forwarding without exposing message content.
+- [x] Diagnose and correct the provider forwarding request so the verified inbound webhook can complete owner-only forwarding without exposing message content.
+- [x] Replace the sending-only Resend credential with the Full access key required by Resend for receiving and forwarding inbound email; sending-domain restriction is available only for sending-only keys.
 - [x] Make the provider-rejection diagnostic response use the portable response shape required by Vercel’s Production type build.
-- [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.
+- [x] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

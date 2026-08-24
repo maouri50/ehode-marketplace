@@ -10,7 +10,7 @@ vi.mock("resend", () => ({
   },
 }));
 
-import { ENV } from "./_core/env";
+import { ENV, resolveInboundWebhookSecret } from "./_core/env";
 import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, parseInboundWebhookDelivery } from "./inboundForwarding";
 
 function webhookRequest(payload: string) {
@@ -44,6 +44,11 @@ afterEach(() => {
 });
 
 describe("inbound forwarding configuration", () => {
+  it("reads the project webhook-secret key while retaining compatibility with the dedicated key", () => {
+    expect(resolveInboundWebhookSecret({ RESEND_WEBHOOK_SECRET: "whsec_project_key" } as NodeJS.ProcessEnv)).toBe("whsec_project_key");
+    expect(resolveInboundWebhookSecret({ RESEND_INBOUND_WEBHOOK_SECRET: "whsec_dedicated_key", RESEND_WEBHOOK_SECRET: "whsec_project_key" } as NodeJS.ProcessEnv)).toBe("whsec_dedicated_key");
+  });
+
   it("accepts the configured private forwarding destination without exposing its value", () => {
     expect(hasInboundForwardingDestination()).toBe(true);
     expect(getInboundForwardingDestination().length).toBeGreaterThan(5);

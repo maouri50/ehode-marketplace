@@ -10,6 +10,10 @@ function normalizeCanonicalOrigin(value?: string) {
   }
 }
 
+export function resolveInboundWebhookSecret(environment: NodeJS.ProcessEnv = process.env) {
+  return environment.RESEND_INBOUND_WEBHOOK_SECRET ?? environment.RESEND_WEBHOOK_SECRET ?? "";
+}
+
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
@@ -25,7 +29,7 @@ export const ENV = {
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
   inboundForwardTo: process.env.INBOUND_FORWARD_TO?.trim().toLowerCase() ?? "",
-  resendInboundWebhookSecret: process.env.RESEND_INBOUND_WEBHOOK_SECRET ?? "",
+  resendInboundWebhookSecret: resolveInboundWebhookSecret(),
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
   canonicalOrigin: normalizeCanonicalOrigin(configuredCanonicalOrigin),
   siteName: configuredSiteName || "Ehode",

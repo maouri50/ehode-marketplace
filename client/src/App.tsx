@@ -17,6 +17,8 @@ import ResetPassword from "./pages/ResetPassword";
 import Contact from "./pages/Contact";
 import AdminCommunity from "./pages/AdminCommunity";
 import { MobileBottomNav } from "./components/MobileBottomNav";
+import { AnalyticsConsent } from "./components/AnalyticsConsent";
+import Privacy from "./pages/Privacy";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -32,6 +34,7 @@ function Router() {
       <Route path={"/account"} component={Account} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/privacy"} component={Privacy} />
       <Route path={"/newsletter/unsubscribe/:token"} component={NewsletterUnsubscribe} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />
       <Route path={"/404"} component={NotFound} />
@@ -59,6 +62,7 @@ function App() {
               <Toaster />
               <Router />
               <MobileBottomNav />
+              <AnalyticsConsent />
             </VisitorWishlistProvider>
           </CartProvider>
         </TooltipProvider>

@@ -67,7 +67,7 @@ export default function Home() {
       <section className="marketplace-studio container" id="about"><div><span className="eyebrow">Meet Ehode</span><h2>Small digital goods, carefully chosen.</h2><p>Ehode starts as a focused one-seller studio, building a clear and useful collection of creative resources. More marketplace features can come later; every product is curated from one place today.</p></div><div className="marketplace-studio__card"><Download size={24}/><strong>Digital by design</strong><span>Protected delivery after verified payment, with no waiting for physical shipping.</span><Link href="/admin">Admin workspace <ChevronRight size={15}/></Link></div></section>
       <NewsletterSignup/>
     </main>
-    <footer className="store-footer marketplace-footer"><div className="container"><span className="store-brand">ehode<span>.</span></span><p>Digital downloads for makers, planners, and creative projects.</p><small>© {new Date().getFullYear()} Ehode. Independent digital goods.</small></div></footer>
+    <footer className="store-footer marketplace-footer"><div className="container"><span className="store-brand">ehode<span>.</span></span><p>Digital downloads for makers, planners, and creative projects.</p><Link href="/privacy" className="store-footer__privacy">Privacy & analytics</Link><small>© {new Date().getFullYear()} Ehode. Independent digital goods.</small></div></footer>
     <CartDrawer/>
   </div>;
 }

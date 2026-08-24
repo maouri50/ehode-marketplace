@@ -226,3 +226,6 @@
 - [x] Test expiry, one-time use, privacy, token safety, and mobile recovery behavior before publishing.
 - [x] Allow visitors to add and remove real Ehode products from a device-local wishlist without creating or signing in to an account.
 - [x] Diagnose the mismatch between the test catalog and www.ehode.com, then restore only genuine existing published listings to the Production catalog.
+- [ ] Add a visitor opt-in “Notify me when available” flow for unavailable product files, with one-time email delivery after that exact product becomes downloadable.
+- [ ] Connect www.ehode.com to Google Analytics and provide the owner a clear visitor and traffic-reporting location.
+- [ ] Add a visitor-controlled analytics consent notice and Google Analytics disclosure before public tracking begins.

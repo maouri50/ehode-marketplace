@@ -365,6 +365,36 @@ a { color: inherit; }
 .marketplace-studio__card span { color: #d9d2ca; font-size: .8rem; line-height: 1.55; }
 .marketplace-studio__card a { display: inline-flex; align-items: center; gap: .2rem; margin-top: .4rem; color: #fff; font-size: .78rem; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .marketplace-footer { background: #fff; }
+.store-footer__privacy { width: fit-content; color: #635a52; font-size: .73rem; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.store-footer__privacy:hover { color: #c94d12; }
+
+.analytics-consent { position: fixed; right: 1rem; bottom: 1rem; left: 1rem; z-index: 90; display: grid; gap: 1rem; max-width: 640px; margin: 0 auto; padding: 1.05rem; border: 1px solid #ded7cf; border-radius: 14px; background: rgba(255,253,249,.98); color: #29231f; box-shadow: 0 18px 50px rgba(37,28,22,.22); }
+.analytics-consent__eyebrow { margin: 0; color: #d14c13; font-size: .66rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.analytics-consent h2 { margin: .28rem 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.35rem; font-weight: 500; }
+.analytics-consent__copy > p:not(.analytics-consent__eyebrow) { margin: .55rem 0 0; color: #635a52; font-size: .78rem; line-height: 1.5; }
+.analytics-consent__copy a { display: inline-block; margin-top: .6rem; color: #7d3618; font-size: .76rem; font-weight: 800; }
+.analytics-consent__actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+.analytics-consent__actions button, .privacy-page__preferences { min-height: 40px; border-radius: 999px; padding: .6rem .9rem; font-size: .76rem; font-weight: 800; transition: transform 160ms cubic-bezier(.23,1,.32,1), background 160ms ease; }
+.analytics-consent__actions button:active, .privacy-page__preferences:active { transform: scale(.97); }
+.analytics-consent__allow, .privacy-page__preferences { border: 1px solid #f1641e; background: #f1641e; color: #fff; }
+.analytics-consent__allow:hover, .privacy-page__preferences:hover { border-color: #c94d12; background: #c94d12; }
+.analytics-consent__deny { border: 1px solid #d8d1ca; background: #fff; color: #534a43; }
+.analytics-consent__deny:hover { border-color: #93877d; }
+
+.privacy-page { min-height: 100vh; background: #f8f6f3; padding: 2rem 0 5rem; }
+.privacy-page__inner { max-width: 820px; }
+.privacy-page__back { display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 3rem; color: #5d554f; font-size: .8rem; font-weight: 800; text-decoration: none; }
+.privacy-page__back:hover { color: #c94d12; }
+.privacy-page h1 { max-width: 650px; margin: .55rem 0 0; color: #27221e; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.5rem, 7vw, 4.4rem); font-weight: 500; letter-spacing: -.06em; line-height: .96; }
+.privacy-page__lead { max-width: 650px; color: #625a53; font-size: 1rem; line-height: 1.7; }
+.privacy-page__grid { display: grid; gap: 1rem; margin-top: 2rem; }
+.privacy-page__grid article { padding: 1.35rem; border: 1px solid #e1dbd5; border-radius: 12px; background: #fff; }
+.privacy-page__grid svg { color: #f1641e; }
+.privacy-page__grid h2 { margin: .75rem 0 .35rem; color: #2c2723; font-family: Georgia, 'Times New Roman', serif; font-size: 1.35rem; font-weight: 500; }
+.privacy-page__grid p, .privacy-page__note { margin: 0; color: #675f58; font-size: .85rem; line-height: 1.6; }
+.privacy-page__preferences { margin-top: 1.5rem; }
+.privacy-page__note { margin-top: 1.2rem; }
+.privacy-page__note a { color: #7c3619; font-weight: 800; }
 
 .newsletter-signup { border-top: 1px solid #e8e2da; background: linear-gradient(110deg, #2d2723, #453b32); color: #fffaf3; }
 .newsletter-signup__inner { display: grid; gap: 2rem; padding-top: 3.6rem; padding-bottom: 3.6rem; }
@@ -405,6 +435,9 @@ a { color: inherit; }
   .marketplace-search-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .marketplace-catalog__intro { flex-direction: row; justify-content: space-between; align-items: end; }
   .marketplace-catalog__intro p { text-align: right; }
+  .analytics-consent { right: 1.5rem; bottom: 1.5rem; left: auto; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(640px, calc(100vw - 3rem)); }
+  .analytics-consent__actions { flex-direction: column; min-width: 150px; }
+  .privacy-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 860px) {
   .marketplace-header__main { min-height: 76px; padding: 0 2rem; }

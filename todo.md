@@ -225,4 +225,4 @@
 - [x] Add responsive Forgot password and Reset password interfaces to the buyer account flow.
 - [x] Test expiry, one-time use, privacy, token safety, and mobile recovery behavior before publishing.
 - [x] Allow visitors to add and remove real Ehode products from a device-local wishlist without creating or signing in to an account.
-- [ ] Diagnose the mismatch between the test catalog and www.ehode.com, then restore only genuine existing published listings to the Production catalog.
+- [x] Diagnose the mismatch between the test catalog and www.ehode.com, then restore only genuine existing published listings to the Production catalog.

@@ -148,7 +148,7 @@
 - [x] Add newsletter campaign template choices for latest products, seasonal campaigns, and manually selected real store resources.
 - [x] Add a responsive email preview using real selected product covers, titles, prices, and product links without fabricated reviews or ratings.
 - [x] Preserve manual SEND confirmation and unsubscribe links for all template-based campaigns.
-- [ ] Verify template draft saving and preview behavior without sending a test campaign.
+- [x] Verify template draft saving and preview behavior without sending a test campaign.
 - [ ] Inspect the failed newsletter delivery reason for the owner-sent campaign without retrieving subscriber email addresses or retrying delivery.
 - [ ] Fix any campaign-delivery configuration or error-handling issue identified, without sending another email automatically.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.

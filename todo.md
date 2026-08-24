@@ -175,4 +175,5 @@
 - [x] Accept the saved project webhook-secret key in the server environment mapping so the deployed inbound endpoint can validate provider events.
 - [x] Normalize angle-bracket characters escaped by the project secret UI in the configured Ehode sender address.
 - [x] Add secret-safe server logging that identifies only which required forwarding configuration names are absent from the live runtime.
+- [x] Return only missing configuration names to a signature-verified provider webhook when production logs are unavailable, without exposing values to unsigned requests.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

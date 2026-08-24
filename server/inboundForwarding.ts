@@ -54,11 +54,6 @@ function webhookHeaders(request: Request) {
 }
 
 export async function handleInboundForwardingWebhook(request: Request, response: Response) {
-  const missingConfiguration = missingInboundForwardingConfigurationNames();
-  if (missingConfiguration.length) {
-    console.error("[Inbound email forwarding] Required configuration is unavailable", missingConfiguration.join(", "));
-    return response.status(503).json({ accepted: false });
-  }
   const headers = webhookHeaders(request);
   const payload = Buffer.isBuffer(request.body) ? request.body.toString("utf8") : "";
   if (!headers || !payload) return response.status(400).json({ accepted: false });
@@ -69,6 +64,12 @@ export async function handleInboundForwardingWebhook(request: Request, response:
     event = resend.webhooks.verify({ payload, headers, webhookSecret: ENV.resendInboundWebhookSecret });
   } catch {
     return response.status(401).json({ accepted: false });
+  }
+
+  const missingConfiguration = missingInboundForwardingConfigurationNames();
+  if (missingConfiguration.length) {
+    console.error("[Inbound email forwarding] Required configuration is unavailable", missingConfiguration.join(", "));
+    return response.status(503).json({ accepted: false, configuration: missingConfiguration });
   }
 
   const delivery = parseInboundWebhookDelivery(event);

@@ -69,6 +69,19 @@ describe("inbound forwarding configuration", () => {
     ]);
   });
 
+  it("reveals only missing configuration names after the provider signature is verified", async () => {
+    Object.assign(ENV, { resendApiKey: "", resendFromEmail: "", inboundForwardTo: "", resendInboundWebhookSecret: "whsec_present" });
+    verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "configuration-diagnostic", to: ["downloads@mail.ehode.com"] } });
+    const { response, state } = webhookResponse();
+
+    await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
+
+    expect(state.code).toBe(503);
+    expect(state.payload).toEqual({ accepted: false, configuration: ["RESEND_API_KEY", "RESEND_FROM_EMAIL", "INBOUND_FORWARD_TO"] });
+    expect(JSON.stringify(state.payload)).not.toContain("whsec_present");
+    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+  });
+
   it("has a verified Ehode sender address configured for provider forwarding", () => {
     expect(normalizeResendFromEmail("Ehode\\u003cdownloads@mail.ehode.com\\u003e")).toBe("Ehode<downloads@mail.ehode.com>");
     expect(ENV.resendFromEmail).toMatch(/^[^<>]+<downloads@mail\.ehode\.com>$/i);

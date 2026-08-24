@@ -86,7 +86,11 @@ export async function handleInboundForwardingWebhook(request: Request, response:
       },
       { idempotencyKey: `ehode-inbound-forward-${delivery.emailId}` },
     );
-    if (forwarded.error || !forwarded.data?.id) throw new Error("Provider did not confirm forwarding.");
+    if (forwarded.error) {
+      console.error("[Inbound email forwarding] Provider rejected forwarding", forwarded.error.name);
+      return response.status(502).json({ accepted: false });
+    }
+    if (!forwarded.data?.id) throw new Error("Provider did not confirm forwarding.");
     return response.status(202).json({ accepted: true });
   } catch (error) {
     console.error("[Inbound email forwarding] Provider forwarding failed", error instanceof Error ? error.message : "Unknown error");

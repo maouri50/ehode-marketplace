@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
-import { newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions } from "../drizzle/schema";
-import { selectActiveCampaignRecipients, type NewsletterCampaignStore, type StoredCampaignSubscriber } from "./newsletterCampaign";
+import { and, asc, eq } from "drizzle-orm";
+import { newsletterCampaignProducts, newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions } from "../drizzle/schema";
+import { selectActiveCampaignRecipients, type NewsletterCampaignTemplate, type NewsletterCampaignStore, type StoredCampaignSubscriber } from "./newsletterCampaign";
 
 function affectedRows(result: unknown) {
   const value = Array.isArray(result) ? result[0] : result;
@@ -15,9 +15,19 @@ export function createNewsletterCampaignDatabaseStore(db: any, subscriberSource?
   const listSubscribers = subscriberSource ?? (async () => db.select({ id: newsletterSubscriptions.id, email: newsletterSubscriptions.email, unsubscribeToken: newsletterSubscriptions.unsubscribeToken, status: newsletterSubscriptions.status }).from(newsletterSubscriptions) as Promise<StoredCampaignSubscriber[]>);
   return {
     countActiveSubscribers: async () => selectActiveCampaignRecipients(await listSubscribers()).length,
-    createDraft: async (campaign) => Number((await db.insert(newsletterCampaigns).values({ ...campaign, status: "draft" }) as any)[0]?.insertId),
+    createDraft: async (campaign) => {
+      const inserted = await db.insert(newsletterCampaigns).values({ subject: campaign.subject, body: campaign.body, recipientCount: campaign.recipientCount, templateType: campaign.templateType, seasonLabel: campaign.seasonLabel, status: "draft" });
+      const campaignId = Number((inserted as any)[0]?.insertId);
+      if (campaignId && campaign.products.length) await db.insert(newsletterCampaignProducts).values(campaign.products.map((product, index) => ({ campaignId, listingId: product.listingId, handle: product.handle, title: product.title, priceAmount: product.priceAmount, currencyCode: product.currencyCode, coverImageUrl: product.coverImageUrl, sortOrder: index })));
+      return campaignId;
+    },
     claimDraft: async (campaignId) => affectedRows(await db.update(newsletterCampaigns).set({ status: "sending", deliveryError: null }).where(and(eq(newsletterCampaigns.id, campaignId), eq(newsletterCampaigns.status, "draft")))) === 1,
-    getCampaign: async (campaignId) => (await db.select({ subject: newsletterCampaigns.subject, body: newsletterCampaigns.body }).from(newsletterCampaigns).where(eq(newsletterCampaigns.id, campaignId)).limit(1))[0] ?? null,
+    getCampaign: async (campaignId) => {
+      const campaign = (await db.select({ subject: newsletterCampaigns.subject, body: newsletterCampaigns.body, templateType: newsletterCampaigns.templateType, seasonLabel: newsletterCampaigns.seasonLabel }).from(newsletterCampaigns).where(eq(newsletterCampaigns.id, campaignId)).limit(1))[0];
+      if (!campaign) return null;
+      const products = await db.select({ listingId: newsletterCampaignProducts.listingId, handle: newsletterCampaignProducts.handle, title: newsletterCampaignProducts.title, priceAmount: newsletterCampaignProducts.priceAmount, currencyCode: newsletterCampaignProducts.currencyCode, coverImageUrl: newsletterCampaignProducts.coverImageUrl, sortOrder: newsletterCampaignProducts.sortOrder }).from(newsletterCampaignProducts).where(eq(newsletterCampaignProducts.campaignId, campaignId)).orderBy(asc(newsletterCampaignProducts.sortOrder));
+      return { ...campaign, templateType: campaign.templateType as NewsletterCampaignTemplate, products };
+    },
     activeSubscribers: async () => selectActiveCampaignRecipients(await listSubscribers()),
     setUnsubscribeToken: async (subscriptionId, unsubscribeToken) => { await db.update(newsletterSubscriptions).set({ unsubscribeToken }).where(eq(newsletterSubscriptions.id, subscriptionId)); },
     recordRecipient: async (recipient) => { await db.insert(newsletterCampaignRecipients).values({ ...recipient, sentAt: new Date() }); },

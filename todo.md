@@ -145,6 +145,12 @@
 - [ ] Apply the newsletter subscription schema to the separate database used by the Vercel deployment, then verify public signup can query it without exposing email data.
 - [ ] Fix the recovered Vercel newsletter campaign table compatibility so campaign drafts can save on phone without sending email.
 - [x] Add regression coverage that records the Vercel campaign schema recovery statements required for partial-table draft compatibility.
+- [ ] Add newsletter campaign template choices for latest products, seasonal campaigns, and manually selected real store resources.
+- [ ] Add a responsive email preview using real selected product covers, titles, prices, and product links without fabricated reviews or ratings.
+- [ ] Preserve manual SEND confirmation and unsubscribe links for all template-based campaigns.
+- [ ] Verify template draft saving and preview behavior without sending a test campaign.
+- [ ] Inspect the failed newsletter delivery reason for the owner-sent campaign without retrieving subscriber email addresses or retrying delivery.
+- [ ] Fix any campaign-delivery configuration or error-handling issue identified, without sending another email automatically.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

@@ -41,12 +41,15 @@ export const newsletterSubscriptions = mysqlTable("newsletterSubscriptions", {
 
 export const newsletterCampaignStatusValues = ["draft", "sending", "sent", "partial", "failed"] as const;
 export const newsletterCampaignRecipientStatusValues = ["sent", "failed"] as const;
+export const newsletterCampaignTemplateValues = ["manual", "latest", "seasonal", "selected"] as const;
 
 /** Campaigns are created and dispatched only by an authenticated owner action; drafting never sends email. */
 export const newsletterCampaigns = mysqlTable("newsletterCampaigns", {
   id: int("id").autoincrement().primaryKey(),
   subject: varchar("subject", { length: 180 }).notNull(),
   body: text("body").notNull(),
+  templateType: mysqlEnum("templateType", newsletterCampaignTemplateValues).default("manual").notNull(),
+  seasonLabel: varchar("seasonLabel", { length: 120 }),
   recipientCount: int("recipientCount").default(0).notNull(),
   status: mysqlEnum("status", newsletterCampaignStatusValues).default("draft").notNull(),
   sentAt: timestamp("sentAt"),
@@ -54,6 +57,20 @@ export const newsletterCampaigns = mysqlTable("newsletterCampaigns", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [index("newsletter_campaigns_status_idx").on(table.status), index("newsletter_campaigns_created_idx").on(table.createdAt)]);
+
+/** Product snapshots keep sent newsletter content stable even if a listing later changes. */
+export const newsletterCampaignProducts = mysqlTable("newsletterCampaignProducts", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull().references(() => newsletterCampaigns.id, { onDelete: "cascade" }),
+  listingId: int("listingId").references(() => marketplaceListings.id, { onDelete: "set null" }),
+  handle: varchar("handle", { length: 255 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  priceAmount: varchar("priceAmount", { length: 40 }).notNull(),
+  currencyCode: varchar("currencyCode", { length: 8 }).notNull(),
+  coverImageUrl: text("coverImageUrl"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [index("newsletter_campaign_products_campaign_idx").on(table.campaignId), index("newsletter_campaign_products_listing_idx").on(table.listingId)]);
 
 /** Private delivery log for one campaign recipient. No recipient sees any other subscriber. */
 export const newsletterCampaignRecipients = mysqlTable("newsletterCampaignRecipients", {

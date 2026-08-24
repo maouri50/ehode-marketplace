@@ -11,9 +11,9 @@ function campaignStore() {
   ];
   const store: NewsletterCampaignStore = {
     countActiveSubscribers: async () => selectActiveCampaignRecipients(storedSubscribers).length,
-    createDraft: async (input) => { events.push(`draft:${input.recipientCount}`); return 41; },
+    createDraft: async (input) => { events.push(`draft:${input.templateType}:${input.products.length}:${input.recipientCount}`); return 41; },
     claimDraft: async () => { events.push("claim"); return true; },
-    getCampaign: async () => ({ subject: "Ehode update", body: "New resources are ready." }),
+    getCampaign: async () => ({ subject: "Ehode update", body: "New resources are ready.", templateType: "manual", seasonLabel: null, products: [] }),
     activeSubscribers: async () => selectActiveCampaignRecipients(storedSubscribers),
     setUnsubscribeToken: async (id) => { events.push(`token:${id}`); },
     recordRecipient: async (recipient) => { recipients.push({ email: recipient.email, status: recipient.status }); },
@@ -44,15 +44,21 @@ describe("newsletter campaigns", () => {
 
   it("creates a draft without calling a mailer and records only the active recipient count", async () => {
     const { store, events } = campaignStore();
-    await expect(createNewsletterCampaignDraft(store, { subject: "New ideas", body: "A message for subscribers." })).resolves.toEqual({ id: 41, recipientCount: 2 });
-    expect(events).toEqual(["draft:2"]);
+    await expect(createNewsletterCampaignDraft(store, { subject: "New ideas", body: "A message for subscribers.", templateType: "manual", seasonLabel: null, products: [] })).resolves.toEqual({ id: 41, recipientCount: 2 });
+    expect(events).toEqual(["draft:manual:0:2"]);
   });
 
   it("allows a zero-subscriber draft while keeping delivery unavailable", async () => {
     const { store, events } = campaignStore();
     store.countActiveSubscribers = async () => 0;
-    await expect(createNewsletterCampaignDraft(store, { subject: "Future update", body: "This can be written before signups arrive." })).resolves.toEqual({ id: 41, recipientCount: 0 });
-    expect(events).toEqual(["draft:0"]);
+    await expect(createNewsletterCampaignDraft(store, { subject: "Future update", body: "This can be written before signups arrive.", templateType: "manual", seasonLabel: null, products: [] })).resolves.toEqual({ id: 41, recipientCount: 0 });
+    expect(events).toEqual(["draft:manual:0:0"]);
+  });
+
+  it("stores selected real-product snapshots with a draft but never calls a mailer while saving", async () => {
+    const { store, events } = campaignStore();
+    await expect(createNewsletterCampaignDraft(store, { subject: "New resources", body: "See these resources.", templateType: "selected", seasonLabel: null, products: [{ listingId: 4, handle: "lesson-planner", title: "Lesson Planner", priceAmount: "9.00", currencyCode: "USD", coverImageUrl: "/api/cover/4", sortOrder: 0 }] })).resolves.toEqual({ id: 41, recipientCount: 2 });
+    expect(events).toEqual(["draft:selected:1:2"]);
   });
 
   it("filters mixed subscriber records to opted-in recipients before delivery", async () => {

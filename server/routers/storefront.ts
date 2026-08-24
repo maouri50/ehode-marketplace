@@ -9,7 +9,7 @@ import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
 import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
-import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow } from "../newsletterCampaign";
+import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow, type NewsletterCampaignProduct } from "../newsletterCampaign";
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
 import { adminSessionProcedure, publicProcedure, router } from "../_core/trpc";
@@ -18,7 +18,16 @@ import { ENV } from "../_core/env";
 const cartInput = z.object({ listingId: z.number().int().positive(), quantity: z.number().int().min(1).max(10) });
 const buyerEmailInput = z.string().trim().email().max(320).transform((value) => value.toLowerCase());
 const newsletterEmailInput = z.string().trim().email().max(320).transform(normalizeNewsletterEmail);
-const newsletterCampaignInput = z.object({ subject: z.string().trim().min(3).max(180), body: z.string().trim().min(10).max(12_000) });
+const newsletterCampaignInput = z.object({
+  subject: z.string().trim().min(3).max(180),
+  body: z.string().trim().min(10).max(12_000),
+  templateType: z.enum(["manual", "latest", "seasonal", "selected"]).default("manual"),
+  seasonLabel: z.string().trim().min(2).max(120).optional(),
+  listingIds: z.array(z.number().int().positive()).max(6).default([]),
+}).superRefine((value, ctx) => {
+  if (value.templateType === "seasonal" && !value.seasonLabel) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a season or occasion name for this campaign.", path: ["seasonLabel"] });
+  if (["seasonal", "selected"].includes(value.templateType) && value.listingIds.length === 0) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Choose at least one published resource for this campaign.", path: ["listingIds"] });
+});
 const activeListing = eq(marketplaceListings.status, "published");
 
 export function resolveBuyerEmail(buyerEmail: string | null | undefined, paypalPayerEmail: string | null | undefined) {
@@ -38,6 +47,19 @@ async function requireDb() {
   const db = await getDb();
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "The catalog database is unavailable." });
   return db;
+}
+
+async function selectNewsletterCampaignProducts(db: any, input: z.infer<typeof newsletterCampaignInput>): Promise<NewsletterCampaignProduct[]> {
+  if (input.templateType === "manual") return [];
+  const requestedIds = Array.from(new Set(input.listingIds));
+  const rows = await db.select({ id: marketplaceListings.id, handle: marketplaceListings.handle, title: marketplaceListings.title, priceAmount: marketplaceListings.priceAmount, currencyCode: marketplaceListings.currencyCode, coverImageUrl: marketplaceListings.coverImageUrl })
+    .from(marketplaceListings)
+    .where(input.templateType === "latest" ? activeListing : and(activeListing, inArray(marketplaceListings.id, requestedIds)))
+    .orderBy(desc(marketplaceListings.createdAt))
+    .limit(input.templateType === "latest" ? 6 : requestedIds.length);
+  const ordered = input.templateType === "latest" ? rows : requestedIds.map((id) => rows.find((row: typeof rows[number]) => row.id === id)).filter(Boolean);
+  if (!ordered.length) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Choose published resources with a public product page before saving this campaign." });
+  return ordered.map((listing: any, index: number) => ({ listingId: listing.id, handle: listing.handle, title: listing.title, priceAmount: listing.priceAmount, currencyCode: listing.currencyCode, coverImageUrl: publicCoverUrl(listing.id, listing.coverImageUrl), sortOrder: index }));
 }
 
 export const storefrontRouter = router({
@@ -217,11 +239,17 @@ export const storefrontRouter = router({
       await ensureNewsletterCampaignSchema(db);
       return db.select().from(newsletterCampaigns).orderBy(desc(newsletterCampaigns.createdAt)).limit(50);
     }),
+    newsletterTemplateProducts: adminSessionProcedure.query(async () => {
+      const db = await requireDb();
+      const rows = await db.select({ id: marketplaceListings.id, handle: marketplaceListings.handle, title: marketplaceListings.title, priceAmount: marketplaceListings.priceAmount, currencyCode: marketplaceListings.currencyCode, coverImageUrl: marketplaceListings.coverImageUrl, productType: marketplaceListings.productType, createdAt: marketplaceListings.createdAt }).from(marketplaceListings).where(activeListing).orderBy(desc(marketplaceListings.createdAt)).limit(30);
+      return rows.map((row) => ({ ...row, coverImageUrl: publicCoverUrl(row.id, row.coverImageUrl) }));
+    }),
     createNewsletterCampaign: adminSessionProcedure.input(newsletterCampaignInput).mutation(async ({ input }) => {
       const db = await requireDb();
       await ensureNewsletterCampaignSchema(db);
       try {
-        return await createNewsletterCampaignDraft(createNewsletterCampaignDatabaseStore(db), input);
+        const products = await selectNewsletterCampaignProducts(db, input);
+        return await createNewsletterCampaignDraft(createNewsletterCampaignDatabaseStore(db), { subject: input.subject, body: input.body, templateType: input.templateType, seasonLabel: input.templateType === "seasonal" ? input.seasonLabel ?? null : null, products });
       } catch (error) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Could not create the newsletter draft." });
       }

@@ -342,6 +342,10 @@ a { color: inherit; }
 .marketplace-product-card .product-card__delivery svg { color: #f1641e; }
 .marketplace-product-card .product-card__bottom { margin-top: .75rem; }
 .marketplace-product-card .product-card__bottom > span { color: #24211f; font-size: .95rem; }
+.product-card__actions { display: inline-flex; align-items: center; gap: .38rem; }
+.product-card__wishlist { display: grid; width: 2.15rem; height: 2.15rem; place-items: center; border: 1px solid #d5cec6; border-radius: 999px; background: #fff; color: #514943; transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease; }
+.product-card__wishlist:hover, .product-card__wishlist.is-saved { border-color: #f1641e; background: #fff1e9; color: #d14c13; }
+.product-card__wishlist:active { transform: scale(.95); }
 .marketplace-product-card .add-button { border-color: #24211f; border-radius: 999px; background: #fff; color: #24211f; padding: .48rem .7rem; }
 .marketplace-product-card .add-button:hover { border-color: #f1641e; background: #f1641e; color: white; }
 .marketplace-product-card .product-card__open { opacity: 1; transform: none; background: rgba(255,255,255,.94); }

@@ -5,6 +5,7 @@ import { Redirect, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
+import { VisitorWishlistProvider } from "./contexts/VisitorWishlistContext";
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Downloads from "./pages/Downloads";
@@ -54,9 +55,11 @@ function App() {
       >
         <TooltipProvider>
           <CartProvider>
-            <Toaster />
-            <Router />
-            <MobileBottomNav />
+            <VisitorWishlistProvider>
+              <Toaster />
+              <Router />
+              <MobileBottomNav />
+            </VisitorWishlistProvider>
           </CartProvider>
         </TooltipProvider>
       </ThemeProvider>

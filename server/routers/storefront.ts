@@ -15,6 +15,7 @@ import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailur
 import { ensureNewsletterCampaignSchema, ensureNewsletterSubscriptionSchema, isMissingNewsletterSubscriptionSchema } from "../newsletterSchema";
 import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { buildVerifiedReviewPublication } from "../reviewPublication";
+import { ensureLegacyCatalogRecovery } from "../legacyCatalogRecovery";
 import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -87,6 +88,7 @@ export const storefrontRouter = router({
   catalog: router({
     list: publicProcedure.input(z.object({ category: z.string().optional(), query: z.string().max(120).optional() }).nullish()).query(async ({ input }) => {
       const db = await requireDb();
+      await ensureLegacyCatalogRecovery(db);
       const rows = await db.select({
         id: marketplaceListings.id,
         handle: marketplaceListings.handle,
@@ -117,6 +119,7 @@ export const storefrontRouter = router({
     }),
     byHandle: publicProcedure.input(z.object({ handle: z.string().min(1).max(255) })).query(async ({ input }) => {
       const db = await requireDb();
+      await ensureLegacyCatalogRecovery(db);
       const rows = await db.select({
         id: marketplaceListings.id,
         handle: marketplaceListings.handle,
@@ -139,6 +142,7 @@ export const storefrontRouter = router({
     }),
     categories: publicProcedure.query(async () => {
       const db = await requireDb();
+      await ensureLegacyCatalogRecovery(db);
       return db.select().from(catalogCategories).where(eq(catalogCategories.isActive, 1)).orderBy(asc(catalogCategories.sortOrder));
     }),
     freeDownload: publicProcedure.input(z.object({ listingId: z.number().int().positive() })).mutation(async ({ input }) => {

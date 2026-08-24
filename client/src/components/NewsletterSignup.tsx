@@ -10,7 +10,7 @@ export function NewsletterSignup() {
       setEmail("");
       setMessage(result.message);
     },
-    onError: () => setMessage("Please enter a valid email address and try again."),
+    onError: (error) => setMessage(error.message || "Newsletter signup is temporarily unavailable. Please try again shortly."),
   });
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {

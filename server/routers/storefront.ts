@@ -109,12 +109,17 @@ export const storefrontRouter = router({
   }),
   newsletter: router({
     subscribe: publicProcedure.input(z.object({ email: newsletterEmailInput })).mutation(async ({ input }) => {
-      const db = await requireDb();
-      return subscribeNewsletter({
-        findByEmail: async (email) => (await db.select({ id: newsletterSubscriptions.id, status: newsletterSubscriptions.status }).from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1))[0] ?? null,
-        create: async (email, unsubscribeToken) => { await db.insert(newsletterSubscriptions).values({ email, unsubscribeToken, status: "active", consentedAt: new Date() }); },
-        reactivate: async (id) => { await db.update(newsletterSubscriptions).set({ status: "active", consentedAt: new Date(), unsubscribedAt: null }).where(eq(newsletterSubscriptions.id, id)); },
-      }, input.email);
+      try {
+        const db = await requireDb();
+        return await subscribeNewsletter({
+          findByEmail: async (email) => (await db.select({ id: newsletterSubscriptions.id, status: newsletterSubscriptions.status }).from(newsletterSubscriptions).where(eq(newsletterSubscriptions.email, email)).limit(1))[0] ?? null,
+          create: async (email, unsubscribeToken) => { await db.insert(newsletterSubscriptions).values({ email, unsubscribeToken, status: "active", consentedAt: new Date() }); },
+          reactivate: async (id) => { await db.update(newsletterSubscriptions).set({ status: "active", consentedAt: new Date(), unsubscribedAt: null }).where(eq(newsletterSubscriptions.id, id)); },
+        }, input.email);
+      } catch (error) {
+        console.error("[Newsletter] Subscription persistence failed", error instanceof Error ? error.message : error);
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Newsletter signup is temporarily unavailable. Please try again shortly." });
+      }
     }),
     unsubscribe: publicProcedure.input(z.object({ token: z.string().min(20).max(96) })).mutation(async ({ input }) => {
       const db = await requireDb();

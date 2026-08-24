@@ -12,7 +12,7 @@ describe("newsletter campaign product templates", () => {
       products: [{ listingId: 7, handle: "teacher-planner", title: "Teacher Planner", priceAmount: "12.00", currencyCode: "USD", coverImageUrl: "/api/cover/7", sortOrder: 0 }],
     });
 
-    expect(email.html).toContain("Back-to-school picks for you");
+    expect(email.html).toContain("Fresh ideas for Back-to-school");
     expect(email.html).toContain("Teacher Planner");
     expect(email.html).toContain("https://www.ehode.com/products/teacher-planner");
     expect(email.html).toContain("https://www.ehode.com/api/cover/7");

@@ -17,7 +17,7 @@ describe("PayPal credentials", () => {
     expect(["sandbox", "live"]).toContain(environment);
 
     const baseUrl = environment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
-    const response = await axios.post<PayPalTokenResponse>(`${baseUrl}/v1/oauth2/token`, "grant_type=client_credentials", {
+    const requestToken = () => axios.post<PayPalTokenResponse>(`${baseUrl}/v1/oauth2/token`, "grant_type=client_credentials", {
       headers: {
         Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
@@ -26,10 +26,18 @@ describe("PayPal credentials", () => {
       validateStatus: () => true,
     });
 
+    let response;
+    try {
+      response = await requestToken();
+    } catch (error) {
+      if (!axios.isAxiosError(error) || error.code !== "ECONNABORTED") throw error;
+      response = await requestToken();
+    }
+
     expect(response.status).toBeGreaterThanOrEqual(200);
     expect(response.status).toBeLessThan(300);
     const body = response.data;
     expect(body.token_type).toBe("Bearer");
     expect(body.access_token).toBeTruthy();
-  }, 20_000);
+  }, 40_000);
 });

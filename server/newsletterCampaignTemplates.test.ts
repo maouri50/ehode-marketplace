@@ -19,4 +19,20 @@ describe("newsletter campaign product templates", () => {
     expect(email.html).not.toMatch(/review|rating|stars/i);
     expect(email.text).toContain("Explore all resources");
   });
+
+  it("uses a product-showcase hero and a single Explore All call to action for latest resources", () => {
+    const email = buildNewsletterCampaignEmail({
+      body: "A short update.",
+      canonicalOrigin: "https://www.ehode.com",
+      templateType: "latest",
+      unsubscribeUrl: "https://www.ehode.com/newsletter/unsubscribe/token",
+      products: [{ listingId: 9, handle: "calm-week", title: "The Calm Week Planner", priceAmount: "12.00", currencyCode: "USD", coverImageUrl: "/api/cover/9", sortOrder: 0 }],
+    });
+
+    expect(email.html).toContain("Fresh ideas,<br/>sent your way.");
+    expect(email.html).toContain("Our Latest Picks for You");
+    expect(email.html).toContain("The Calm Week Planner");
+    expect(email.html).toContain("Explore All");
+    expect(email.html).not.toMatch(/review|rating|stars/i);
+  });
 });

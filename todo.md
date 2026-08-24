@@ -136,21 +136,25 @@
 - [x] Exercise the real database campaign adapter with mixed active/unsubscribed subscribers and a mocked mailer, confirming only active delivery rows persist.
 - [ ] Publish the verified release checkpoint to ehode.com through the owner-facing Publish control, then confirm the live newsletter campaign changes.
 - [x] Push the verified newsletter-campaign release to a non-production GitHub branch without triggering a production deployment.
-- [ ] Verify the release branch contents and provide the owner the exact manual Vercel deployment step for ehode.com.
-- [ ] Fix the Vercel TypeScript build error in the protected download handler, validate the release build, and update the newsletter release branch.
-- [ ] Diagnose and fix the live /admin rejection of the owner’s correct password on phone without exposing the credential.
-- [ ] Diagnose and fix the mobile failure when saving a newsletter campaign draft, without sending any campaign email.
-- [ ] Diagnose and fix the public newsletter signup flow so active subscribers appear in the admin campaign count on phone and desktop.
-- [ ] Apply the missing newsletter subscription and campaign tables to the database used by the published application, then verify their presence without storing test emails.
-- [ ] Apply the newsletter subscription schema to the separate database used by the Vercel deployment, then verify public signup can query it without exposing email data.
-- [ ] Fix the recovered Vercel newsletter campaign table compatibility so campaign drafts can save on phone without sending email.
+- [x] Verify the release branch contents and provide the owner the exact manual Vercel deployment step for ehode.com.
+- [x] Fix the Vercel TypeScript build error in the protected download handler, validate the release build, and update the newsletter release branch.
+- [x] Diagnose and fix the live /admin rejection of the owner’s correct password on phone without exposing the credential.
+- [x] Diagnose and fix the mobile failure when saving a newsletter campaign draft, without sending any campaign email.
+- [x] Diagnose and fix the public newsletter signup flow so active subscribers appear in the admin campaign count on phone and desktop.
+- [x] Apply the missing newsletter subscription and campaign tables to the database used by the published application, then verify their presence without storing test emails.
+- [x] Apply the newsletter subscription schema to the separate database used by the Vercel deployment, then verify public signup can query it without exposing email data.
+- [x] Fix the recovered Vercel newsletter campaign table compatibility so campaign drafts can save on phone without sending email.
 - [x] Add regression coverage that records the Vercel campaign schema recovery statements required for partial-table draft compatibility.
+- [ ] Verify on live mobile /admin/newsletter that Save campaign draft succeeds after the final Vercel promotion, with a success notice and persisted draft but no email delivery.
 - [x] Add newsletter campaign template choices for latest products, seasonal campaigns, and manually selected real store resources.
 - [x] Add a responsive email preview using real selected product covers, titles, prices, and product links without fabricated reviews or ratings.
 - [x] Preserve manual SEND confirmation and unsubscribe links for all template-based campaigns.
 - [x] Verify template draft saving and preview behavior without sending a test campaign.
 - [x] Improve the newsletter email and admin preview with an engaging hero, real-product card hierarchy, a seasonal editorial heading, and a single prominent real-product CTA.
 - [x] Verify the enhanced newsletter template is attractive and readable on desktop and phone without sending a campaign.
+- [x] Add a dedicated product-showcase newsletter template with a large branded hero, Latest Picks heading, stacked image-led cards, and one Explore All CTA using real products only.
+- [x] Match the admin email preview and phone layout to the new product-showcase template without fabricating ratings or reviews.
+- [x] Verify the product-showcase template output without sending a campaign.
 - [ ] Inspect the failed newsletter delivery reason for the owner-sent campaign without retrieving subscriber email addresses or retrying delivery.
 - [ ] Fix any campaign-delivery configuration or error-handling issue identified, without sending another email automatically.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.

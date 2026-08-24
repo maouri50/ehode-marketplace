@@ -192,3 +192,7 @@
 - [x] Replace the sending-only Resend credential with the Full access key required by Resend for receiving and forwarding inbound email; sending-domain restriction is available only for sending-only keys.
 - [x] Make the provider-rejection diagnostic response use the portable response shape required by Vercel’s Production type build.
 - [x] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.
+- [x] Add clear original-sender identification to private forwarded email subjects and content without exposing data publicly.
+- [x] Set the forwarded message Reply-To header to the original inbound sender so owner replies return to that person, with recipient validation and no automatic replies.
+- [x] Preserve safe inbound attachments in the customized forwarding message with bounded ephemeral retrieval and no application storage.
+- [x] Test sender visibility, reply routing, invalid sender handling, and existing signature/idempotency safeguards before deployment.

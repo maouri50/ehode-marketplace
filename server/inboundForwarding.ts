@@ -3,6 +3,8 @@ import { Resend } from "resend";
 import { ENV } from "./_core/env";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const maxForwardedAttachments = 10;
+const maxForwardedAttachmentBytes = 30 * 1024 * 1024;
 export const inboundForwardingWebhookPath = "/api/email/inbound";
 
 type InboundWebhookDelivery = {
@@ -14,6 +16,14 @@ type InboundWebhookResponse = {
   status(code: number): InboundWebhookResponse;
   json(body: unknown): InboundWebhookResponse;
   end(): InboundWebhookResponse;
+};
+
+type ReceivedEmailForForwarding = {
+  from?: string;
+  reply_to?: string[] | null;
+  subject?: string;
+  html?: string | null;
+  text?: string | null;
 };
 
 /** Returns the private forwarding address only for server-side use. */
@@ -28,6 +38,86 @@ export function hasInboundForwardingDestination() {
 export function mailboxAddress(value: string) {
   const match = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
   return match?.[0]?.toLowerCase() ?? "";
+}
+
+function safeHeaderText(value: string, fallback: string) {
+  const cleaned = value.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+  return (cleaned || fallback).slice(0, 180);
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>'"]/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;",
+  })[character] ?? character);
+}
+
+/** Uses a valid Reply-To header first, then falls back to the original sender. */
+export function originalReplyAddress(email: ReceivedEmailForForwarding) {
+  const candidates = [...(email.reply_to ?? []), email.from ?? ""];
+  return candidates.map(mailboxAddress).find(candidate => emailPattern.test(candidate)) ?? "";
+}
+
+/** Creates the owner-only message shown in the private forwarding inbox. */
+export function createOwnerForwardingMessage(email: ReceivedEmailForForwarding) {
+  const replyTo = originalReplyAddress(email);
+  const sender = mailboxAddress(email.from ?? "") || replyTo;
+  if (!sender || !replyTo) return null;
+
+  const subject = safeHeaderText(email.subject ?? "", "New message");
+  const textBody = email.text?.trim() || "(No plain-text message body was supplied.)";
+  const htmlBody = email.html?.trim() || `<pre style="white-space:pre-wrap">${escapeHtml(textBody)}</pre>`;
+  const noticeText = `Original sender: ${sender}\nReplying to this message will send your response to that person.\n\n`;
+  const noticeHtml = `<div style="font-family:Arial,sans-serif;border-left:4px solid #f76707;padding:12px 16px;margin:0 0 20px;background:#fff7ed"><strong>Original sender:</strong> ${escapeHtml(sender)}<br><span style="color:#555">Use Reply to send your response to this person.</span></div>`;
+
+  return {
+    replyTo,
+    subject: `[Ehode] ${subject} — from ${sender}`,
+    text: `${noticeText}${textBody}`,
+    html: `${noticeHtml}${htmlBody}`,
+  };
+}
+
+function safeAttachmentFilename(filename: string | undefined, index: number) {
+  const cleaned = (filename ?? `attachment-${index + 1}`).replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 180);
+  return cleaned || `attachment-${index + 1}`;
+}
+
+/** Retrieves bounded attachment bytes only for the outbound forward; nothing is persisted by Ehode. */
+export async function retrieveInboundAttachments(resend: Resend, emailId: string) {
+  const listed = await resend.emails.receiving.attachments.list({ emailId });
+  if (listed.error || !listed.data) return [];
+
+  const sourceAttachments = listed.data.data;
+  if (sourceAttachments.length > maxForwardedAttachments || sourceAttachments.reduce((sum, attachment) => sum + attachment.size, 0) > maxForwardedAttachmentBytes) {
+    console.warn("[Inbound email forwarding] Attachments exceed the safe forwarding limit");
+    return [];
+  }
+
+  const forwardedAttachments: { filename: string; content: Buffer; contentType: string; contentId?: string }[] = [];
+  for (let index = 0; index < sourceAttachments.length; index += 1) {
+    const attachment = sourceAttachments[index];
+    const download = await fetch(attachment.download_url);
+    if (!download.ok) {
+      console.warn("[Inbound email forwarding] Provider attachment download was unavailable");
+      continue;
+    }
+    const content = Buffer.from(await download.arrayBuffer());
+    if (content.byteLength > maxForwardedAttachmentBytes || forwardedAttachments.reduce((sum, item) => sum + item.content.byteLength, 0) + content.byteLength > maxForwardedAttachmentBytes) {
+      console.warn("[Inbound email forwarding] Attachment bytes exceed the safe forwarding limit");
+      break;
+    }
+    forwardedAttachments.push({
+      filename: safeAttachmentFilename(attachment.filename, index),
+      content,
+      contentType: attachment.content_type,
+      ...(attachment.content_id ? { contentId: attachment.content_id } : {}),
+    });
+  }
+  return forwardedAttachments;
 }
 
 export function parseInboundWebhookDelivery(event: unknown): InboundWebhookDelivery | null {
@@ -83,12 +173,29 @@ export async function handleInboundForwardingWebhook(request: Request, response:
   if (!isNewsletterRecipient(delivery.recipients, ENV.resendFromEmail)) return response.status(204).end();
 
   try {
-    const forwarded = await resend.emails.receiving.forward(
+    const received = await resend.emails.receiving.get(delivery.emailId);
+    if (received.error || !received.data) {
+      console.error("[Inbound email forwarding] Provider could not retrieve the received message");
+      return response.status(502).json({ accepted: false });
+    }
+
+    const forwardingMessage = createOwnerForwardingMessage(received.data);
+    if (!forwardingMessage) {
+      console.error("[Inbound email forwarding] Received message has no valid reply address");
+      return response.status(204).end();
+    }
+
+    const attachments = await retrieveInboundAttachments(resend, delivery.emailId);
+
+    const forwarded = await resend.emails.send(
       {
-        emailId: delivery.emailId,
         from: ENV.resendFromEmail,
         to: getInboundForwardingDestination(),
-        passthrough: true,
+        replyTo: forwardingMessage.replyTo,
+        subject: forwardingMessage.subject,
+        text: forwardingMessage.text,
+        html: forwardingMessage.html,
+        ...(attachments.length ? { attachments } : {}),
       },
       { idempotencyKey: `ehode-inbound-forward-${delivery.emailId}` },
     );

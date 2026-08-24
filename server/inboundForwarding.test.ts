@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const verifyWebhook = vi.fn();
-const forwardReceivedEmail = vi.fn();
+const getReceivedEmail = vi.fn();
+const listReceivedAttachments = vi.fn();
+const sendEmail = vi.fn();
 const constructResend = vi.fn();
 
 vi.mock("resend", () => ({
@@ -11,12 +13,23 @@ vi.mock("resend", () => ({
       constructResend(apiKey);
     }
     webhooks = { verify: verifyWebhook };
-    emails = { receiving: { forward: forwardReceivedEmail } };
+    emails = { receiving: { get: getReceivedEmail, attachments: { list: listReceivedAttachments } }, send: sendEmail };
   },
 }));
 
 import { ENV, normalizeResendFromEmail, resolveInboundWebhookSecret } from "./_core/env";
-import { getInboundForwardingDestination, handleInboundForwardingWebhook, hasInboundForwardingDestination, isNewsletterRecipient, mailboxAddress, missingInboundForwardingConfigurationNames, parseInboundWebhookDelivery } from "./inboundForwarding";
+import {
+  createOwnerForwardingMessage,
+  getInboundForwardingDestination,
+  handleInboundForwardingWebhook,
+  hasInboundForwardingDestination,
+  isNewsletterRecipient,
+  mailboxAddress,
+  missingInboundForwardingConfigurationNames,
+  originalReplyAddress,
+  parseInboundWebhookDelivery,
+  retrieveInboundAttachments,
+} from "./inboundForwarding";
 
 function webhookRequest(payload: string) {
   return {
@@ -29,7 +42,19 @@ function webhookResponse() {
   const response = { code: 0, payload: undefined as unknown, ended: false };
   return {
     response: {
-      status: (code: number) => { response.code = code; return { json: (payload: unknown) => { response.payload = payload; return response; }, end: () => { response.ended = true; return response; } }; },
+      status: (code: number) => {
+        response.code = code;
+        return {
+          json: (payload: unknown) => {
+            response.payload = payload;
+            return response;
+          },
+          end: () => {
+            response.ended = true;
+            return response;
+          },
+        };
+      },
     } as any,
     state: response,
   };
@@ -45,7 +70,9 @@ const originalConfiguration = {
 afterEach(() => {
   Object.assign(ENV, originalConfiguration);
   verifyWebhook.mockReset();
-  forwardReceivedEmail.mockReset();
+  getReceivedEmail.mockReset();
+  listReceivedAttachments.mockReset();
+  sendEmail.mockReset();
   constructResend.mockReset();
 });
 
@@ -62,10 +89,7 @@ describe("inbound forwarding configuration", () => {
 
     expect(entry).toContain('import app from "./handler.mjs"');
     expect(packageJson.scripts.build).toContain("esbuild api/bundle.ts");
-    expect(vercelConfig.rewrites).toContainEqual({
-      source: "/api/email/inbound",
-      destination: "/api/entry",
-    });
+    expect(vercelConfig.rewrites).toContainEqual({ source: "/api/email/inbound", destination: "/api/entry" });
   });
 
   it("accepts the configured private forwarding destination without exposing its value", () => {
@@ -81,12 +105,7 @@ describe("inbound forwarding configuration", () => {
 
   it("reports only missing configuration names without exposing secret values", () => {
     Object.assign(ENV, { resendApiKey: "", resendFromEmail: "", inboundForwardTo: "", resendInboundWebhookSecret: "" });
-    expect(missingInboundForwardingConfigurationNames()).toEqual([
-      "RESEND_API_KEY",
-      "RESEND_FROM_EMAIL",
-      "RESEND_WEBHOOK_SECRET",
-      "INBOUND_FORWARD_TO",
-    ]);
+    expect(missingInboundForwardingConfigurationNames()).toEqual(["RESEND_API_KEY", "RESEND_FROM_EMAIL", "RESEND_WEBHOOK_SECRET", "INBOUND_FORWARD_TO"]);
   });
 
   it("reveals only missing configuration names after the provider signature is verified", async () => {
@@ -99,7 +118,7 @@ describe("inbound forwarding configuration", () => {
     expect(state.code).toBe(503);
     expect(state.payload).toEqual({ accepted: false, configuration: ["RESEND_API_KEY", "RESEND_FROM_EMAIL", "INBOUND_FORWARD_TO"] });
     expect(JSON.stringify(state.payload)).not.toContain("whsec_present");
-    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("has a verified Ehode sender address configured for provider forwarding", () => {
@@ -109,11 +128,7 @@ describe("inbound forwarding configuration", () => {
 
   it("uses the configured Resend API key when safely processing a non-forwarded inbound event", async () => {
     expect(ENV.resendApiKey).toMatch(/^re_/);
-    Object.assign(ENV, {
-      resendFromEmail: "Ehode <hello@mail.ehode.com>",
-      inboundForwardTo: "owner@example.com",
-      resendInboundWebhookSecret: "whsec_api_key_check",
-    });
+    Object.assign(ENV, { resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_api_key_check" });
     verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "api-key-check", to: ["other@mail.ehode.com"] } });
     const { response, state } = webhookResponse();
 
@@ -121,16 +136,11 @@ describe("inbound forwarding configuration", () => {
 
     expect(constructResend).toHaveBeenCalledWith(ENV.resendApiKey);
     expect(state.code).toBe(204);
-    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("uses the configured signing secret when the inbound endpoint validates a safe non-forwarded event", async () => {
-    Object.assign(ENV, {
-      resendApiKey: "server-key",
-      resendFromEmail: "Ehode <hello@mail.ehode.com>",
-      inboundForwardTo: "owner@example.com",
-      resendInboundWebhookSecret: "whsec_runtime_configuration_check",
-    });
+    Object.assign(ENV, { resendApiKey: "server-key", resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_runtime_configuration_check" });
     verifyWebhook.mockImplementation((options: { webhookSecret: string }) => {
       expect(options.webhookSecret).toBe("whsec_runtime_configuration_check");
       return { type: "email.received", data: { email_id: "configuration-check", to: ["other@mail.ehode.com"] } };
@@ -140,7 +150,7 @@ describe("inbound forwarding configuration", () => {
     await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
 
     expect(state.code).toBe(204);
-    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("accepts only a signed inbound event with a usable provider email ID", () => {
@@ -163,20 +173,59 @@ describe("inbound forwarding configuration", () => {
     await handleInboundForwardingWebhook(webhookRequest("{}"), response);
 
     expect(state.code).toBe(401);
-    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("forwards only the selected newsletter address once, using the provider idempotency key", async () => {
+  it("identifies the original sender and routes Reply to a valid original Reply-To address", () => {
+    expect(originalReplyAddress({ from: "Customer <customer@example.com>", reply_to: ["help@example.com"] })).toBe("help@example.com");
+    expect(createOwnerForwardingMessage({
+      from: "Customer <customer@example.com>",
+      reply_to: ["help@example.com"],
+      subject: "Question\r\nBcc: nobody@example.com",
+      text: "Could you help me?",
+    })).toMatchObject({
+      replyTo: "help@example.com",
+      subject: "[Ehode] Question Bcc: nobody@example.com — from customer@example.com",
+    });
+  });
+
+  it("does not create a reply-capable forward when the original sender is invalid", () => {
+    expect(createOwnerForwardingMessage({ from: "not an email", subject: "Hello" })).toBeNull();
+  });
+
+  it("copies small inbound attachments only into the outbound forward request", async () => {
+    listReceivedAttachments.mockResolvedValue({
+      data: {
+        data: [{ id: "attachment-1", filename: "question.pdf", size: 3, content_type: "application/pdf", content_disposition: "attachment", download_url: "https://provider.example/attachment" }],
+      },
+      error: null,
+    });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(new Uint8Array([1, 2, 3]), { status: 200 }));
+    const fakeResend = { emails: { receiving: { attachments: { list: listReceivedAttachments } } } } as any;
+
+    await expect(retrieveInboundAttachments(fakeResend, "inbound-attachment")).resolves.toMatchObject([{ filename: "question.pdf", contentType: "application/pdf" }]);
+    expect(fetchSpy).toHaveBeenCalledWith("https://provider.example/attachment");
+    fetchSpy.mockRestore();
+  });
+
+  it("forwards only the selected newsletter address once with visible sender context and a Reply-To header", async () => {
     Object.assign(ENV, { resendApiKey: "server-key", resendFromEmail: "Ehode <hello@mail.ehode.com>", inboundForwardTo: "owner@example.com", resendInboundWebhookSecret: "whsec_test" });
     verifyWebhook.mockReturnValue({ type: "email.received", data: { email_id: "inbound-123", to: ["hello@mail.ehode.com"] } });
-    forwardReceivedEmail.mockResolvedValue({ data: { id: "forwarded-123" }, error: null });
+    getReceivedEmail.mockResolvedValue({ data: { from: "Customer <customer@example.com>", reply_to: null, subject: "A real question", text: "Please help." }, error: null });
+    listReceivedAttachments.mockResolvedValue({ data: { data: [] }, error: null });
+    sendEmail.mockResolvedValue({ data: { id: "forwarded-123" }, error: null });
     const { response, state } = webhookResponse();
 
     await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
 
     expect(state.code).toBe(202);
-    expect(forwardReceivedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ emailId: "inbound-123", passthrough: true, to: "owner@example.com" }),
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "owner@example.com",
+        replyTo: "customer@example.com",
+        subject: "[Ehode] A real question — from customer@example.com",
+        text: expect.stringContaining("Original sender: customer@example.com"),
+      }),
       { idempotencyKey: "ehode-inbound-forward-inbound-123" },
     );
   });
@@ -189,6 +238,7 @@ describe("inbound forwarding configuration", () => {
     await handleInboundForwardingWebhook(webhookRequest('{"type":"email.received"}'), response);
 
     expect(state.code).toBe(204);
-    expect(forwardReceivedEmail).not.toHaveBeenCalled();
+    expect(getReceivedEmail).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 });

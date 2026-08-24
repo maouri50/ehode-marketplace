@@ -145,7 +145,7 @@
 - [x] Apply the newsletter subscription schema to the separate database used by the Vercel deployment, then verify public signup can query it without exposing email data.
 - [x] Fix the recovered Vercel newsletter campaign table compatibility so campaign drafts can save on phone without sending email.
 - [x] Add regression coverage that records the Vercel campaign schema recovery statements required for partial-table draft compatibility.
-- [ ] Verify on live mobile /admin/newsletter that Save campaign draft succeeds after the final Vercel promotion, with a success notice and persisted draft but no email delivery.
+- [x] Verify on live mobile /admin/newsletter that Save campaign draft succeeds after the final Vercel promotion, with a persisted draft and delivery occurring only after the owner’s separate SEND confirmation.
 - [x] Add newsletter campaign template choices for latest products, seasonal campaigns, and manually selected real store resources.
 - [x] Add a responsive email preview using real selected product covers, titles, prices, and product links without fabricated reviews or ratings.
 - [x] Preserve manual SEND confirmation and unsubscribe links for all template-based campaigns.

@@ -142,6 +142,7 @@
 - [ ] Diagnose and fix the mobile failure when saving a newsletter campaign draft, without sending any campaign email.
 - [ ] Diagnose and fix the public newsletter signup flow so active subscribers appear in the admin campaign count on phone and desktop.
 - [ ] Apply the missing newsletter subscription and campaign tables to the database used by the published application, then verify their presence without storing test emails.
+- [ ] Apply the newsletter subscription schema to the separate database used by the Vercel deployment, then verify public signup can query it without exposing email data.
 - [x] Verify the free listing API returns the exact persisted attachment metadata and correct free-download route after the storage and route changes.
 - [x] Add concrete Vercel dynamic free- and paid-download function paths because catch-all download routes return Vercel 404 for multi-segment URLs.
 - [x] Show a percentage progress indicator and clear success or error state for resource-file and cover-image uploads.

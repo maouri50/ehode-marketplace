@@ -2,16 +2,27 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
-function createContext(): { ctx: TrpcContext; cookies: Array<{ name: string; value: string; options: Record<string, unknown> }> } {
-  const cookies: Array<{ name: string; value: string; options: Record<string, unknown> }> = [];
+function createContext(): { ctx: TrpcContext; cookies: string[] } {
+  const cookies: string[] = [];
   return {
     ctx: {
       user: null,
       req: { protocol: "https", headers: {} } as TrpcContext["req"],
-      res: { cookie: (name: string, value: string, options: Record<string, unknown>) => cookies.push({ name, value, options }), clearCookie: () => undefined } as TrpcContext["res"],
+      res: {
+        getHeader: (name: string) => name.toLowerCase() === "set-cookie" ? cookies : undefined,
+        setHeader: (name: string, value: string | string[]) => {
+          if (name.toLowerCase() === "set-cookie") {
+            cookies.splice(0, cookies.length, ...(Array.isArray(value) ? value : [value]));
+          }
+        },
+      } as TrpcContext["res"],
     },
     cookies,
   };
+}
+
+function sessionCookieValue(cookie: string | undefined) {
+  return cookie?.match(/ehode_admin_session=([^;]+)/)?.[1];
 }
 
 describe("adminAuth.login", () => {
@@ -21,17 +32,19 @@ describe("adminAuth.login", () => {
     const { ctx, cookies } = createContext();
     const result = await appRouter.createCaller(ctx).adminAuth.login({ password });
     expect(result).toEqual({ success: true });
-    expect(cookies[0]).toMatchObject({ name: "ehode_admin_session", options: { httpOnly: true, sameSite: "lax" } });
+    expect(cookies[0]).toContain("ehode_admin_session=");
+    expect(cookies[0]).toContain("HttpOnly");
+    expect(cookies[0]).toContain("SameSite=Lax");
   });
 
   it("recognizes the issued admin session on a subsequent request", async () => {
     const password = process.env.ADMIN_PASSWORD ?? "";
     const { ctx, cookies } = createContext();
     await appRouter.createCaller(ctx).adminAuth.login({ password });
-    const sessionCookie = cookies[0];
+    const sessionCookie = sessionCookieValue(cookies[0]);
     const followUpContext: TrpcContext = {
       user: null,
-      req: { protocol: "https", headers: { cookie: `${sessionCookie?.name}=${sessionCookie?.value}` } } as TrpcContext["req"],
+      req: { protocol: "https", headers: { cookie: `ehode_admin_session=${sessionCookie}` } } as TrpcContext["req"],
       res: {} as TrpcContext["res"],
     };
 
@@ -42,10 +55,10 @@ describe("adminAuth.login", () => {
     const password = process.env.ADMIN_PASSWORD ?? "";
     const { ctx, cookies } = createContext();
     await appRouter.createCaller(ctx).adminAuth.login({ password });
-    const sessionCookie = cookies[0];
+    const sessionCookie = sessionCookieValue(cookies[0]);
     const followUpContext: TrpcContext = {
       user: null,
-      req: { protocol: "https", headers: { cookie: `${sessionCookie?.name}=${sessionCookie?.value}` } } as TrpcContext["req"],
+      req: { protocol: "https", headers: { cookie: `ehode_admin_session=${sessionCookie}` } } as TrpcContext["req"],
       res: {} as TrpcContext["res"],
     };
 

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { TrpcContext } from "./_core/context";
+import { clearResponseCookie, setResponseCookie } from "./_core/cookies";
 import { ENV } from "./_core/env";
 
 export const ADMIN_SESSION_COOKIE = "ehode_admin_session";
@@ -46,7 +47,7 @@ export function hasAdminSession(req: TrpcContext["req"]) {
 
 export function setAdminSession(ctx: Pick<TrpcContext, "req" | "res">) {
   const secure = ENV.isProduction || ctx.req.protocol === "https" || ctx.req.headers["x-forwarded-proto"] === "https";
-  ctx.res.cookie(ADMIN_SESSION_COOKIE, createAdminSessionToken(), {
+  setResponseCookie(ctx.res, ADMIN_SESSION_COOKIE, createAdminSessionToken(), {
     httpOnly: true,
     secure,
     sameSite: "lax",
@@ -56,5 +57,5 @@ export function setAdminSession(ctx: Pick<TrpcContext, "req" | "res">) {
 }
 
 export function clearAdminSession(ctx: Pick<TrpcContext, "res">) {
-  ctx.res.clearCookie(ADMIN_SESSION_COOKIE, { httpOnly: true, sameSite: "lax", path: "/" });
+  clearResponseCookie(ctx.res, ADMIN_SESSION_COOKIE, { httpOnly: true, sameSite: "lax", path: "/" });
 }

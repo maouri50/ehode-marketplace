@@ -181,4 +181,7 @@
 - [ ] Promote the verified inbound forwarding release to an externally reachable Vercel Production deployment because the preview URL is protected by Vercel SSO.
 - [x] Fix the Vercel production entry module import so the public inbound handler can start under Node ESM.
 - [x] Separate the Vercel handler bundle source from its generated output so production builds do not overwrite an active input module.
+- [x] Fix the Vercel-only Express response cookie typing failure so the Production inbound release can complete its build.
+- [x] Update the logout test response stub for the portable Set-Cookie header helper and restore full regression coverage.
+- [x] Preserve PayPal credential verification in the sandbox by replacing the timed-out native fetch test transport with a compatible HTTPS client.
 - [ ] Configure the approved inbound subdomain/MX and webhook settings, then verify one owner-approved forwarding test without retaining its contents.

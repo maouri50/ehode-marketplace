@@ -212,3 +212,6 @@
 - [x] Add an account-linked wishlist that lets signed-in buyers save and remove real Ehode products without public visibility.
 - [x] Add real product-sharing links for supported social channels and copyable product URLs without fabricating share counts or engagement.
 - [x] Test wishlist ownership, unauthenticated handling, sharing links, and mobile product-page presentation.
+- [ ] Verify buyer account registration and login using a genuine owner-approved purchaser account without retaining a test account.
+- [ ] Verify review eligibility is limited to a real completed purchase and submit no synthetic review, rating, or testimonial.
+- [ ] Verify owner-only review moderation and public approved-review visibility using only genuine customer feedback.

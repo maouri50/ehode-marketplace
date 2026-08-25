@@ -52,9 +52,11 @@ export function getSessionCookieOptions(
   };
 }
 
-type HeaderResponse = {
-  getHeader(name: string): number | string | string[] | undefined;
-  setHeader(name: string, value: number | string | readonly string[]): unknown;
+export type HeaderResponse = {
+  getHeader?: (name: string) => number | string | string[] | undefined;
+  setHeader?: (name: string, value: string | string[]) => unknown;
+  get?: (name: string) => string | undefined;
+  set?: (name: string, value: string | string[]) => unknown;
 };
 
 type PortableCookieOptions = Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure" | "maxAge">;
@@ -84,9 +86,17 @@ function serializeCookie(name: string, value: string, options: PortableCookieOpt
 }
 
 function appendSetCookie(res: HeaderResponse, serializedCookie: string) {
-  const current = res.getHeader("Set-Cookie");
+  const current = typeof res.getHeader === "function" ? res.getHeader("Set-Cookie") : res.get?.("Set-Cookie");
   const values = Array.isArray(current) ? current : typeof current === "string" ? [current] : [];
-  res.setHeader("Set-Cookie", [...values, serializedCookie]);
+  if (typeof res.setHeader === "function") {
+    res.setHeader("Set-Cookie", [...values, serializedCookie]);
+    return;
+  }
+  if (typeof res.set === "function") {
+    res.set("Set-Cookie", [...values, serializedCookie]);
+    return;
+  }
+  throw new Error("Cookie response must support setting headers");
 }
 
 /** Writes a cookie through standard Node response headers, including on Vercel serverless functions. */

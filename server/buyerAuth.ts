@@ -3,6 +3,7 @@ import { and, eq, gt, isNull } from "drizzle-orm";
 import { buyerAccounts, buyerPasswordResetTokens, buyerSessions, marketplaceOrders } from "../drizzle/schema";
 import { getDb } from "./db";
 import { clearResponseCookie, setResponseCookie } from "./_core/cookies";
+import type { HeaderResponse } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { ensureBuyerFeatureSchema } from "./buyerSchema";
 import { sendBuyerPasswordResetEmail } from "./buyerPasswordResetEmail";
@@ -19,10 +20,7 @@ export type BuyerIdentity = {
 };
 
 type CookieRequest = { headers: Record<string, string | string[] | undefined>; protocol?: string };
-type CookieResponse = {
-  getHeader: (name: string) => number | string | string[] | undefined;
-  setHeader: (name: string, value: number | string | readonly string[]) => unknown;
-};
+type CookieResponse = HeaderResponse;
 
 function readCookie(cookieHeader: CookieRequest["headers"]["cookie"], name: string) {
   const header = Array.isArray(cookieHeader) ? cookieHeader.join(";") : cookieHeader;

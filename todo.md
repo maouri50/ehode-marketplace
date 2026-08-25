@@ -244,3 +244,4 @@
 - [x] Add explicit Accept and Decline buttons to the cookie strip, loading Google Analytics only after the visitor accepts.
 - [x] Resolve the Vercel-only response-header typing error blocking the public information and analytics-choice deployment.
 - [x] Resolve the Vercel-only cookie option literal typing error blocking the repaired public information release.
+- [x] Replace the Vercel-incompatible OAuth response status typing with a portable response contract.

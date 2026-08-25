@@ -253,3 +253,4 @@
 - [x] Show the newsletter popup at most once every 24 hours for non-subscribers while keeping it suppressed after a successful signup.
 - [x] Send one private, one-time subscription confirmation email after a new newsletter signup succeeds.
 - [x] Raise the green newsletter popup slightly within the phone viewport for a more balanced visual position.
+- [x] Position the green newsletter popup higher on phones near the “DIGITAL GOODS FOR CURIOUS MAKERS” hero label.

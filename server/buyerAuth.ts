@@ -99,7 +99,7 @@ export function setBuyerSession(ctx: { req: CookieRequest; res: CookieResponse }
   setResponseCookie(ctx.res, BUYER_SESSION_COOKIE, token, {
     httpOnly: true,
     secure: secureCookie(ctx.req),
-    sameSite: "lax",
+    sameSite: "lax" as const,
     maxAge: SESSION_TTL_MS,
     path: "/",
   });

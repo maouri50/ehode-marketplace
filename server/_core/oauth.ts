@@ -5,9 +5,9 @@ import * as db from "../db";
 import { clearResponseCookie, getSessionCookieOptions, setResponseCookie } from "./cookies";
 import { sdk } from "./sdk";
 
-function getQueryParam(req: Request, key: string): string | undefined {
-  const value = req.query[key];
-  return typeof value === "string" ? value : undefined;
+export function getQueryParam(req: { url?: string }, key: string): string | undefined {
+  const value = new URL(req.url ?? "", "https://ehode.local").searchParams.get(key);
+  return value ?? undefined;
 }
 
 export function registerOAuthRoutes(app: Express) {

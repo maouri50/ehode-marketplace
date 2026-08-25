@@ -233,3 +233,4 @@
 - [x] Remove the Google Analytics consent interface and load analytics automatically on public Ehode visits at the owner’s request.
 - [x] Repair the public homepage hero image so it loads without broken-image text on phone and desktop.
 - [x] Forward each new Contact form submission privately to the owner’s configured personal email without exposing that destination to visitors.
+- [x] Replace the homepage hero SPA fallback path with the verified durable uploaded asset URL so the image renders publicly.

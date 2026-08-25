@@ -1,20 +1,41 @@
 import { PayPalCheckout } from "@/components/PayPalCheckout";
 import { useCart } from "@/contexts/CartContext";
 import { BASKET_DRAWER_CLOSE_LABEL, BASKET_DRAWER_HEADING } from "@/lib/cartDrawerHeader";
+import { CART_DRAWER_EXIT_DURATION_MS, CART_DRAWER_SIDE } from "@/lib/cartDrawerMotion";
 import { formatMoney } from "@/lib/storefront";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity } = useCart();
+  const [isMounted, setIsMounted] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setIsMounted(true);
+      setIsClosing(false);
+      return;
+    }
+
+    if (!isMounted) return;
+
+    setIsClosing(true);
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const timeout = window.setTimeout(() => setIsMounted(false), reduceMotion ? 1 : CART_DRAWER_EXIT_DURATION_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [isOpen, isMounted]);
+
+  if (!isMounted) return null;
 
   const subtotal = items.reduce((sum, item) => sum + Number(item.priceAmount) * item.quantity, 0);
   const currency = items[0]?.currencyCode ?? "USD";
+  const drawerState = isClosing ? "closing" : "open";
 
   return (
-    <div className="cart-layer" role="presentation" onMouseDown={closeCart}>
-      <aside className="cart-drawer" role="dialog" aria-modal="true" aria-label="Your basket" onMouseDown={(event) => event.stopPropagation()}>
+    <div className="cart-layer" data-state={drawerState} role="presentation" onMouseDown={closeCart}>
+      <aside className="cart-drawer" data-drawer-side={CART_DRAWER_SIDE} data-state={drawerState} role="dialog" aria-modal="true" aria-label="Your basket" onMouseDown={(event) => event.stopPropagation()}>
         <div className="cart-drawer__head">
           <div>
             <span className="eyebrow">Your selection</span>

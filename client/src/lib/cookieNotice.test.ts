@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { COOKIE_NOTICE_DISMISSAL_KEY, COOKIE_NOTICE_TEXT, getCookieNoticeDismissed } from "./cookieNotice";
+import { COOKIE_ANALYTICS_CHOICE_KEY, COOKIE_NOTICE_TEXT, getCookieAnalyticsChoice } from "./cookieNotice";
 
 describe("informational cookie notice", () => {
-  it("uses the owner-requested wording without making analytics consent conditional", () => {
+  it("uses the owner-requested wording and remembers an explicit analytics choice", () => {
     expect(COOKIE_NOTICE_TEXT).toBe("We use cookies to ensure that we give you the best experience on our website.");
-    expect(getCookieNoticeDismissed({ getItem: (key) => key === COOKIE_NOTICE_DISMISSAL_KEY ? "true" : null })).toBe(true);
-    expect(getCookieNoticeDismissed({ getItem: () => null })).toBe(false);
+    expect(getCookieAnalyticsChoice({ getItem: (key) => key === COOKIE_ANALYTICS_CHOICE_KEY ? "accepted" : null })).toBe("accepted");
+    expect(getCookieAnalyticsChoice({ getItem: () => "declined" })).toBe("declined");
+    expect(getCookieAnalyticsChoice({ getItem: () => null })).toBeUndefined();
   });
 });

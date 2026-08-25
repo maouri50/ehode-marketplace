@@ -35,6 +35,7 @@ function Router() {
       <Route path={"/account"} component={Account} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/shop-info"} component={ShopInfo} />
       <Route path={"/privacy"} component={ShopInfo} />
       <Route path={"/refunds"} component={ShopInfo} />
       <Route path={"/terms"} component={ShopInfo} />

@@ -376,10 +376,14 @@ a { color: inherit; }
 .store-footer__section a:hover { color: #cc5f51; text-decoration: underline; text-underline-offset: 3px; }
 .store-footer__legal { margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid #e6d9d2; }
 .store-footer__legal small { color: #8c746d; font-size: .7rem; }
-.cookie-notice { position: fixed; right: 0; bottom: 0; left: 0; z-index: 65; display: flex; align-items: center; justify-content: center; gap: 1rem; min-height: 58px; padding: .85rem 3.2rem .85rem 1rem; background: #f3e4df; color: #382321; box-shadow: 0 -3px 18px rgba(63,34,29,.08); }
+.cookie-notice { position: fixed; right: 0; bottom: 0; left: 0; z-index: 75; display: flex; align-items: center; justify-content: center; gap: 1rem; min-height: 58px; padding: .85rem 1rem; background: #f3e4df; color: #382321; box-shadow: 0 -3px 18px rgba(63,34,29,.08); }
 .cookie-notice p { max-width: 840px; margin: 0; font-size: clamp(.88rem, 1.7vw, 1.15rem); line-height: 1.35; text-align: center; }
-.cookie-notice button { position: absolute; right: 1rem; display: grid; width: 2rem; height: 2rem; place-items: center; border: 0; border-radius: 999px; background: transparent; color: #55312d; cursor: pointer; }
-.cookie-notice button:hover { background: rgba(80,42,35,.1); }
+.cookie-notice__actions { display: flex; flex: 0 0 auto; gap: .5rem; }
+.cookie-notice__actions button { min-height: 36px; border-radius: 999px; padding: .5rem .9rem; font-size: .75rem; font-weight: 800; cursor: pointer; }
+.cookie-notice__accept { border: 1px solid #b8491e; background: #d85b21; color: #fff; }
+.cookie-notice__accept:hover { background: #bd4616; }
+.cookie-notice__decline { border: 1px solid #bda9a1; background: transparent; color: #55312d; }
+.cookie-notice__decline:hover { background: rgba(80,42,35,.1); }
 .shop-info-page__content { max-width: 780px; padding-top: 5rem; padding-bottom: 4.5rem; }
 .shop-info-page__content h1 { max-width: 600px; margin: .4rem 0 .8rem; color: #2d211e; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 500; letter-spacing: -.045em; }
 .shop-info-page__intro { max-width: 640px; margin: 0; color: #675a52; font-size: 1.04rem; line-height: 1.7; }
@@ -387,6 +391,11 @@ a { color: inherit; }
 .shop-info-page__sections section { padding: 1.25rem 1.35rem; border: 1px solid #eaded7; border-radius: 12px; background: #fffdfa; }
 .shop-info-page__sections h2 { margin: 0 0 .45rem; color: #392520; font-family: Georgia, 'Times New Roman', serif; font-size: 1.25rem; }
 .shop-info-page__sections p { margin: 0; color: #675a52; font-size: .91rem; line-height: 1.65; }
+.contact-support { width: min(100%, 760px); display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 1.25rem; margin: 0 auto 1.25rem; padding: 1.2rem 1.3rem; border: 1px solid #eaded7; border-radius: 14px; background: #fffdfa; }
+.contact-support h2 { margin: 0; color: #3b251f; font-family: Georgia, 'Times New Roman', serif; font-size: 1.3rem; }
+.contact-support div { display: grid; gap: .65rem; }
+.contact-support p { margin: 0; color: #665951; font-size: .82rem; line-height: 1.55; }
+.contact-support strong { color: #3c2923; }
 .store-footer__privacy { width: fit-content; color: #635a52; font-size: .73rem; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .store-footer__privacy:hover { color: #c94d12; }
 
@@ -532,10 +541,12 @@ a { color: inherit; }
   .mobile-bottom-nav__basket b { position: absolute; top: -.48rem; right: -.68rem; display: grid; min-width: 1rem; height: 1rem; place-items: center; border-radius: 999px; background: #f1641e; color: #fff; font-size: .52rem; }
   .store-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.1rem; }
   .store-footer__brand { grid-column: 1 / -1; }
-  .cookie-notice { bottom: calc(66px + env(safe-area-inset-bottom)); min-height: 52px; padding: .7rem 3rem .7rem .9rem; }
-  .cookie-notice p { font-size: .78rem; text-align: left; }
-  .cookie-notice button { right: .6rem; }
+  .cookie-notice { bottom: calc(66px + env(safe-area-inset-bottom)); align-items: flex-start; gap: .65rem; padding: .7rem .75rem; }
+  .cookie-notice p { font-size: .72rem; text-align: left; }
+  .cookie-notice__actions { flex-direction: column; gap: .35rem; }
+  .cookie-notice__actions button { min-height: 30px; padding: .35rem .65rem; font-size: .67rem; }
   .shop-info-page__content { padding-top: 3rem; padding-bottom: 3rem; }
+  .contact-support { grid-template-columns: 1fr; gap: .55rem; margin-right: 1rem; margin-left: 1rem; }
 }
 
 /* Standalone admin workspace */

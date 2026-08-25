@@ -31,7 +31,7 @@ export function StoreFooter() {
         <p>Digital downloads for makers, planners, and creative projects.</p>
       </div>
       <nav aria-label="Shop information" className="store-footer__section">
-        <h2>Shop info</h2>
+        <h2><Link href="/shop-info">Shop info</Link></h2>
         {shopLinks.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}
       </nav>
       <nav aria-label="About and help" className="store-footer__section">

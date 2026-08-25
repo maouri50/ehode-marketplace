@@ -240,3 +240,5 @@
 - [x] Replace the Vercel-incompatible OAuth Express application type with a portable route-registration contract.
 - [x] Add an informational cookie strip matching the owner’s reference wording without blocking automatic Google Analytics.
 - [x] Add a mobile-friendly SEO footer with genuine Ehode category, shop, contact, policy, and FAQ navigation links.
+- [x] Expand Shop info, Contact, Privacy, Refunds, Terms, and FAQ content with original Ehode digital-download storefront guidance informed by the owner-provided reference.
+- [x] Add explicit Accept and Decline buttons to the cookie strip, loading Google Analytics only after the visitor accepts.

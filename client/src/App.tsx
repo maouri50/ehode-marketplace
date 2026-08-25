@@ -18,7 +18,6 @@ import Contact from "./pages/Contact";
 import AdminCommunity from "./pages/AdminCommunity";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { GoogleAnalytics } from "./components/GoogleAnalytics";
-import { CookieNotice } from "./components/CookieNotice";
 import ShopInfo from "./pages/ShopInfo";
 
 function Router() {
@@ -68,7 +67,6 @@ function App() {
               <Router />
               <MobileBottomNav />
               <GoogleAnalytics />
-              <CookieNotice />
             </VisitorWishlistProvider>
           </CartProvider>
         </TooltipProvider>

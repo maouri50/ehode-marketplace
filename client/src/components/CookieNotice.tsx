@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { COOKIE_ANALYTICS_CHOICE_KEY, COOKIE_NOTICE_TEXT, CookieAnalyticsChoice, getCookieAnalyticsChoice } from "@/lib/cookieNotice";
 
 export function CookieNotice() {
   const [location] = useLocation();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(!getCookieAnalyticsChoice(window.localStorage));
-  }, []);
+  const [visible, setVisible] = useState(() => (
+    typeof window !== "undefined" && !getCookieAnalyticsChoice(window.localStorage)
+  ));
 
   if (!visible || location.startsWith("/admin")) return null;
 

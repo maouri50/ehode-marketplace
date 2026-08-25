@@ -1,21 +1,22 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CheckCircle2, Mail, X } from "lucide-react";
 import { saveNewsletterPopupDismissal, saveNewsletterPopupState, shouldShowNewsletterPopup } from "@/lib/newsletterPopup";
+import { getNewsletterPopupFeedbackPresentation, type NewsletterPopupFeedbackKind } from "@/lib/newsletterPopupPresentation";
 import { trpc } from "@/lib/trpc";
 
 export function NewsletterPopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; kind: NewsletterPopupFeedbackKind } | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const subscribe = trpc.storefront.newsletter.subscribe.useMutation({
     onSuccess: (result) => {
       saveNewsletterPopupState(window.localStorage, "subscribed");
-      setMessage(result.message);
+      setMessage({ text: result.message, kind: "success" });
       window.setTimeout(() => setIsOpen(false), 2200);
     },
-    onError: (error) => setMessage(error.message || "Newsletter signup is temporarily unavailable. Please try again shortly."),
+    onError: (error) => setMessage({ text: error.message || "Newsletter signup is temporarily unavailable. Please try again shortly.", kind: "error" }),
   });
 
   useEffect(() => {
@@ -61,7 +62,13 @@ export function NewsletterPopup() {
         <button type="submit" disabled={subscribe.isPending}>{subscribe.isPending ? "Joining…" : "Subscribe"}</button>
       </form>
       <p className="newsletter-popup__fine-print">Occasional emails only. Unsubscribe at any time.</p>
-      {message ? <p className="newsletter-popup__message" role="status"><CheckCircle2 size={17}/>{message}</p> : null}
+      {message ? (() => {
+        const presentation = getNewsletterPopupFeedbackPresentation(message.kind);
+        return <p className={presentation.className} role="status">
+          {presentation.showCheckmark ? <span className="newsletter-popup__success-icon" aria-hidden="true"><CheckCircle2 size={28} strokeWidth={3}/></span> : null}
+          <span>{message.text}</span>
+        </p>;
+      })() : null}
     </section>
   </div>;
 }

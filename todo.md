@@ -254,3 +254,5 @@
 - [x] Send one private, one-time subscription confirmation email after a new newsletter signup succeeds.
 - [x] Raise the green newsletter popup slightly within the phone viewport for a more balanced visual position.
 - [x] Position the green newsletter popup higher on phones near the “DIGITAL GOODS FOR CURIOUS MAKERS” hero label.
+- [x] Add a prominent checkmark to the newsletter popup’s successful subscription message.
+- [x] Refine the green newsletter popup with a smooth slide-in entrance and a reduced-motion fallback.

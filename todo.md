@@ -247,3 +247,4 @@
 - [x] Replace the Vercel-incompatible OAuth response status typing with a portable response contract.
 - [x] Repair the missing public Accept and Decline cookie notice so new visitors see the requested controls on www.ehode.com.
 - [x] Ensure the Accept and Decline cookie notice renders directly within the public storefront route for new visitors.
+- [x] Refine the mobile Basket drawer header so the title and close control are compact, aligned, and easy to use.

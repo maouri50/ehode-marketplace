@@ -18,6 +18,8 @@ import Contact from "./pages/Contact";
 import AdminCommunity from "./pages/AdminCommunity";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { GoogleAnalytics } from "./components/GoogleAnalytics";
+import { CookieNotice } from "./components/CookieNotice";
+import ShopInfo from "./pages/ShopInfo";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -33,6 +35,10 @@ function Router() {
       <Route path={"/account"} component={Account} />
       <Route path={"/reset-password"} component={ResetPassword} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/privacy"} component={ShopInfo} />
+      <Route path={"/refunds"} component={ShopInfo} />
+      <Route path={"/terms"} component={ShopInfo} />
+      <Route path={"/faq"} component={ShopInfo} />
       <Route path={"/newsletter/unsubscribe/:token"} component={NewsletterUnsubscribe} />
       <Route path={"/downloads/:receiptToken"} component={Downloads} />
       <Route path={"/404"} component={NotFound} />
@@ -61,6 +67,7 @@ function App() {
               <Router />
               <MobileBottomNav />
               <GoogleAnalytics />
+              <CookieNotice />
             </VisitorWishlistProvider>
           </CartProvider>
         </TooltipProvider>

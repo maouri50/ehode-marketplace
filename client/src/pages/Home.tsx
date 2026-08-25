@@ -2,6 +2,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
+import { StoreFooter } from "@/components/StoreFooter";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, ChevronRight, Download, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -67,7 +68,7 @@ export default function Home() {
       <section className="marketplace-studio container" id="about"><div><span className="eyebrow">Meet Ehode</span><h2>Small digital goods, carefully chosen.</h2><p>Ehode starts as a focused one-seller studio, building a clear and useful collection of creative resources. More marketplace features can come later; every product is curated from one place today.</p></div><div className="marketplace-studio__card"><Download size={24}/><strong>Digital by design</strong><span>Protected delivery after verified payment, with no waiting for physical shipping.</span><Link href="/admin">Admin workspace <ChevronRight size={15}/></Link></div></section>
       <NewsletterSignup/>
     </main>
-    <footer className="store-footer marketplace-footer"><div className="container"><span className="store-brand">ehode<span>.</span></span><p>Digital downloads for makers, planners, and creative projects.</p><small>© {new Date().getFullYear()} Ehode. Independent digital goods.</small></div></footer>
+    <StoreFooter/>
     <CartDrawer/>
   </div>;
 }

@@ -1,6 +1,6 @@
 import { COOKIE_NAME, ONE_YEAR_MS, OAUTH_STATE_COOKIE, decodeOAuthState } from "@shared/const";
 import { parse as parseCookieHeader } from "cookie";
-import type { Express, Request, Response } from "express";
+import type { Request, Response } from "express";
 import * as db from "../db";
 import { clearResponseCookie, getSessionCookieOptions, setResponseCookie } from "./cookies";
 import { sdk } from "./sdk";
@@ -10,8 +10,20 @@ export function getQueryParam(req: { url?: string }, key: string): string | unde
   return value ?? undefined;
 }
 
-export function registerOAuthRoutes(app: Express) {
-  app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+type OAuthRouteApplication = {
+  get: (path: string, handler: (req: Request, res: Response) => Promise<void>) => unknown;
+};
+
+function getOAuthRouteApplication(app: unknown): OAuthRouteApplication {
+  if (!app || typeof (app as { get?: unknown }).get !== "function") {
+    throw new Error("OAuth route registration requires an application with a GET route handler");
+  }
+  return app as OAuthRouteApplication;
+}
+
+export function registerOAuthRoutes(app: unknown) {
+  const routes = getOAuthRouteApplication(app);
+  routes.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 

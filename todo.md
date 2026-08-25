@@ -237,3 +237,6 @@
 - [x] Resolve the Vercel-only OAuth request typing error blocking the corrected homepage hero deployment.
 - [x] Replace the remaining live /manus-storage hero reference with a publicly durable image URL that loads on www.ehode.com.
 - [x] Replace the remaining live /manus-storage hero reference with a publicly durable image URL that loads on www.ehode.com.
+- [x] Replace the Vercel-incompatible OAuth Express application type with a portable route-registration contract.
+- [x] Add an informational cookie strip matching the owner’s reference wording without blocking automatic Google Analytics.
+- [x] Add a mobile-friendly SEO footer with genuine Ehode category, shop, contact, policy, and FAQ navigation links.

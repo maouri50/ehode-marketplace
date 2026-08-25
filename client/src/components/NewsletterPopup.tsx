@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CheckCircle2, Mail, X } from "lucide-react";
-import { getNewsletterPopupState, saveNewsletterPopupState } from "@/lib/newsletterPopup";
+import { saveNewsletterPopupDismissal, saveNewsletterPopupState, shouldShowNewsletterPopup } from "@/lib/newsletterPopup";
 import { trpc } from "@/lib/trpc";
 
 export function NewsletterPopup() {
@@ -19,7 +19,7 @@ export function NewsletterPopup() {
   });
 
   useEffect(() => {
-    if (getNewsletterPopupState(window.localStorage)) return;
+    if (!shouldShowNewsletterPopup(window.localStorage)) return;
     const timer = window.setTimeout(() => setIsOpen(true), 900);
     return () => window.clearTimeout(timer);
   }, []);
@@ -36,7 +36,7 @@ export function NewsletterPopup() {
 
   function closePopup() {
     if (!subscribe.isPending) {
-      saveNewsletterPopupState(window.localStorage, "dismissed");
+      saveNewsletterPopupDismissal(window.localStorage);
       setIsOpen(false);
     }
   }

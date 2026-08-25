@@ -9,6 +9,7 @@ import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
 import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
+import { sendNewsletterSubscriptionConfirmation } from "../newsletterConfirmationEmail";
 import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow, type NewsletterCampaignProduct } from "../newsletterCampaign";
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
 import { summarizeNewsletterDeliveryFailures } from "../newsletterDeliveryFailures";
@@ -164,12 +165,17 @@ export const storefrontRouter = router({
         create: async (email: string, unsubscribeToken: string) => { await db.insert(newsletterSubscriptions).values({ email, unsubscribeToken, status: "active", consentedAt: new Date() }); },
         reactivate: async (id: number) => { await db.update(newsletterSubscriptions).set({ status: "active", consentedAt: new Date(), unsubscribedAt: null }).where(eq(newsletterSubscriptions.id, id)); },
       };
+      const subscribeAndConfirm = async () => {
+        const result = await subscribeNewsletter(store, input.email);
+        if (result.confirmationRequired) await sendNewsletterSubscriptionConfirmation(input.email);
+        return result;
+      };
       try {
-        return await subscribeNewsletter(store, input.email);
+        return await subscribeAndConfirm();
       } catch (error) {
         if (isMissingNewsletterSubscriptionSchema(error)) {
           await ensureNewsletterSubscriptionSchema(db);
-          return subscribeNewsletter(store, input.email);
+          return subscribeAndConfirm();
         }
         console.error("[Newsletter] Subscription persistence failed", error instanceof Error ? error.message : error);
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Newsletter signup is temporarily unavailable. Please try again shortly." });

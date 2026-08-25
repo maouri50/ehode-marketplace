@@ -14,10 +14,17 @@ export type NewsletterSubscriptionStore = {
   reactivate: (id: number) => Promise<void>;
 };
 
+/** Persists consent while keeping the public success wording the same for all email states. */
 export async function subscribeNewsletter(store: NewsletterSubscriptionStore, rawEmail: string) {
   const email = normalizeNewsletterEmail(rawEmail);
   const existing = await store.findByEmail(email);
-  if (!existing) await store.create(email, nanoid(40));
-  if (existing?.status === "unsubscribed") await store.reactivate(existing.id);
-  return { success: true, message: NEWSLETTER_SUCCESS_MESSAGE };
+  let confirmationRequired = false;
+  if (!existing) {
+    await store.create(email, nanoid(40));
+    confirmationRequired = true;
+  } else if (existing.status === "unsubscribed") {
+    await store.reactivate(existing.id);
+    confirmationRequired = true;
+  }
+  return { success: true, message: NEWSLETTER_SUCCESS_MESSAGE, confirmationRequired };
 }

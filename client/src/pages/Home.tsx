@@ -4,6 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { StoreHeader } from "@/components/StoreHeader";
 import { StoreFooter } from "@/components/StoreFooter";
 import { CookieNotice } from "@/components/CookieNotice";
+import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, ChevronRight, Download, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -72,5 +73,6 @@ export default function Home() {
     <StoreFooter/>
     <CartDrawer/>
     <CookieNotice/>
+    <NewsletterPopup/>
   </div>;
 }

@@ -249,3 +249,4 @@
 - [x] Ensure the Accept and Decline cookie notice renders directly within the public storefront route for new visitors.
 - [x] Refine the mobile Basket drawer header so the title and close control are compact, aligned, and easy to use.
 - [x] Convert the phone Basket into a fixed right-side drawer that stays inside the viewport and slides smoothly from the right when opening or closing.
+- [x] Add a green new-visitor newsletter signup popup that uses the existing subscription service, supports closing, and does not repeat after a visitor dismisses or subscribes.

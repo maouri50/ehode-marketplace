@@ -235,3 +235,5 @@
 - [x] Forward each new Contact form submission privately to the owner’s configured personal email without exposing that destination to visitors.
 - [x] Replace the homepage hero SPA fallback path with the verified durable uploaded asset URL so the image renders publicly.
 - [x] Resolve the Vercel-only OAuth request typing error blocking the corrected homepage hero deployment.
+- [x] Replace the remaining live /manus-storage hero reference with a publicly durable image URL that loads on www.ehode.com.
+- [x] Replace the remaining live /manus-storage hero reference with a publicly durable image URL that loads on www.ehode.com.

@@ -3,7 +3,9 @@ import { ORIGINAL_HERO_ALT, ORIGINAL_HERO_IMAGE } from "./homeHero";
 
 describe("original homepage hero asset", () => {
   it("uses the verified stylish creative hero asset", () => {
-    expect(ORIGINAL_HERO_IMAGE).toBe("/manus-storage/ehode-stylish-creative-hero_6b830736.jpg");
+    expect(ORIGINAL_HERO_IMAGE).toBe(
+      "https://eho-marketpl-8vnygsaw.manus.space/manus-storage/ehode-stylish-creative-hero_3569365d.jpg",
+    );
     expect(ORIGINAL_HERO_ALT).toContain("creative desk");
   });
 });

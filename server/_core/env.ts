@@ -35,6 +35,8 @@ export const ENV = {
   inboundForwardTo: process.env.INBOUND_FORWARD_TO?.trim().toLowerCase() ?? "",
   resendInboundWebhookSecret: resolveInboundWebhookSecret(),
   adminPassword: process.env.ADMIN_PASSWORD ?? "",
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  telegramOwnerChatId: process.env.TELEGRAM_OWNER_CHAT_ID ?? "",
   canonicalOrigin: normalizeCanonicalOrigin(configuredCanonicalOrigin),
   siteName: configuredSiteName || "Ehode",
 };

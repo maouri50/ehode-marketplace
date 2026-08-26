@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { marketplaceListings, productAssets } from "../drizzle/schema";
 import { getDb } from "./db";
 import { storageRead } from "./storage";
+import { notifyFreeResourceDownload } from "./telegramSaleNotification";
 
 function safeAttachmentName(filename: string) {
   return filename.replace(/[\r\n"\\]/g, "_").slice(0, 180) || "ehode-download";
@@ -21,6 +22,7 @@ export function registerFreeDownloadRoutes(app: Express) {
       if (!db) return res.status(503).send("Downloads are temporarily unavailable.");
       const rows = await db.select({
         listingId: marketplaceListings.id,
+        listingTitle: marketplaceListings.title,
         priceAmount: marketplaceListings.priceAmount,
         listingStatus: marketplaceListings.status,
         storageKey: productAssets.storageKey,
@@ -46,7 +48,9 @@ export function registerFreeDownloadRoutes(app: Express) {
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       });
-      return res.status(200).send(bytes);
+      res.status(200).send(bytes);
+      await notifyFreeResourceDownload({ listingTitle: file.listingTitle, filename });
+      return;
     } catch (error) {
       console.error("[Free download] Failed to serve attachment", error);
       return res.status(500).send("The download could not be prepared.");

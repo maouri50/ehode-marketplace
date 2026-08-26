@@ -256,3 +256,5 @@
 - [x] Position the green newsletter popup higher on phones near the “DIGITAL GOODS FOR CURIOUS MAKERS” hero label.
 - [x] Add a prominent checkmark to the newsletter popup’s successful subscription message.
 - [x] Refine the green newsletter popup with a smooth slide-in entrance and a reduced-motion fallback.
+- [ ] Verify the full latest Ehode website source is safely committed and uploaded to the owner’s GitHub repository without secrets, then confirm Vercel deploys that current source.
+- [x] Send private Telegram notifications through a dedicated Ehode bot after each verified completed sale and successful free-resource download without exposing buyer data publicly.

@@ -9,6 +9,7 @@ import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
 import { sendOrderDeliveryEmail } from "../orderDeliveryEmail";
 import { normalizeNewsletterEmail, subscribeNewsletter } from "../newsletter";
+import { notifyVerifiedSale } from "../telegramSaleNotification";
 import { sendNewsletterSubscriptionConfirmation } from "../newsletterConfirmationEmail";
 import { createNewsletterCampaignDraft, newsletterCampaignSendConfirmation, selectActiveCampaignRecipients, sendNewsletterCampaignNow, type NewsletterCampaignProduct } from "../newsletterCampaign";
 import { createNewsletterCampaignDatabaseStore } from "../newsletterCampaignDatabase";
@@ -284,6 +285,7 @@ export const storefrontRouter = router({
         for (const asset of assets) await db.insert(downloadGrants).values({ orderItemId, assetId: asset.id, accessToken: nanoid(40) });
       }
       await sendOrderDeliveryEmail({ order: { id: orderId, receiptToken, buyerEmail: resolvedBuyerEmail }, titles: listings.map((listing) => listing.title) });
+      await notifyVerifiedSale({ orderId, totalAmount: paidAmount, currencyCode, titles: listings.map((listing) => listing.title) });
       return { orderId, receiptToken, alreadyCaptured: false };
     }),
   }),

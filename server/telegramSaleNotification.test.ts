@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   formatFreeDownloadAlert,
+  formatPaidDownloadAlert,
   formatVerifiedSaleAlert,
   sendTelegramOwnerNotification,
 } from "./telegramSaleNotification";
@@ -20,9 +21,33 @@ describe("Telegram sale notifications", () => {
     expect(message).not.toContain("@");
   });
 
+  it("includes only the private country code and address supplied for a verified sale", () => {
+    const message = formatVerifiedSaleAlert({
+      orderId: 42,
+      totalAmount: 12.5,
+      currencyCode: "USD",
+      titles: ["Creative Planner"],
+      origin: { countryCode: "MA", ipAddress: "203.0.113.24" },
+    });
+
+    expect(message).toContain("Country: MA");
+    expect(message).toContain("IP address: 203.0.113.24");
+    expect(message).not.toContain("email");
+  });
+
   it("formats a free-resource alert with only the resource information", () => {
     expect(formatFreeDownloadAlert({ listingTitle: "Free Planner", filename: "planner.pdf" })).toBe(
       "Free Ehode resource downloaded\nResource: Free Planner\nFile: planner.pdf",
+    );
+  });
+
+  it("formats a purchased-download alert with the private download origin", () => {
+    expect(formatPaidDownloadAlert({
+      listingTitle: "Creative Planner",
+      filename: "planner.pdf",
+      origin: { countryCode: "MA", ipAddress: "203.0.113.24" },
+    })).toBe(
+      "Purchased Ehode resource downloaded\nResource: Creative Planner\nFile: planner.pdf\nCountry: MA\nIP address: 203.0.113.24",
     );
   });
 

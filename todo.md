@@ -258,3 +258,7 @@
 - [x] Refine the green newsletter popup with a smooth slide-in entrance and a reduced-motion fallback.
 - [ ] Verify the full latest Ehode website source is safely committed and uploaded to the owner’s GitHub repository without secrets, then confirm Vercel deploys that current source.
 - [x] Send private Telegram notifications through a dedicated Ehode bot after each verified completed sale and successful free-resource download without exposing buyer data publicly.
+- [ ] Set the validated dedicated Ehode Telegram bot token and owner chat ID in Vercel Production and Preview before promoting the alert release.
+- [ ] Prepare and connect a non-intrusive Google AdSense setup for Ehode without degrading shopping and download usability.
+- [x] Make every product/resource page open at its top hero position on phone and desktop instead of preserving the previous lower scroll position.
+- [x] Add minimal country and IP-origin information to private Telegram alerts for completed downloads, with no public exposure or unnecessary retention.

@@ -4,13 +4,18 @@ import { StoreFooter } from "@/components/StoreFooter";
 import { useCart } from "@/contexts/CartContext";
 import { useVisitorWishlist } from "@/contexts/VisitorWishlistContext";
 import { formatMoney } from "@/lib/storefront";
+import { scrollProductPageToStart } from "@/lib/productScroll";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Check, Copy, Download, Heart, Mail, PackageCheck, Share2, ShoppingBag, Star } from "lucide-react";
+import { useLayoutEffect } from "react";
 import { Link, useRoute } from "wouter";
 
 export default function ProductDetail() {
   const [, params] = useRoute("/products/:handle");
   const handle = params?.handle ?? "";
+  useLayoutEffect(() => {
+    scrollProductPageToStart();
+  }, [handle]);
   const { data: product, isLoading } = trpc.storefront.catalog.byHandle.useQuery({ handle }, { enabled: Boolean(handle) });
   const buyer = trpc.buyer.me.useQuery(undefined, { refetchOnWindowFocus: false });
   const wishlist = trpc.buyer.wishlist.list.useQuery(undefined, { enabled: Boolean(buyer.data) });

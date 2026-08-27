@@ -1,3 +1,4 @@
+import type { DownloadOrigin } from "./downloadOrigin";
 import { ENV } from "./_core/env";
 
 type TelegramFetch = (input: string, init?: RequestInit) => Promise<Response>;
@@ -7,11 +8,19 @@ export type VerifiedSaleAlert = {
   totalAmount: number;
   currencyCode: string;
   titles: string[];
+  origin?: DownloadOrigin;
 };
 
 export type FreeDownloadAlert = {
   listingTitle: string;
   filename: string;
+  origin?: DownloadOrigin;
+};
+
+export type PaidDownloadAlert = {
+  listingTitle: string;
+  filename: string;
+  origin?: DownloadOrigin;
 };
 
 function compactTitles(titles: string[]) {
@@ -20,12 +29,21 @@ function compactTitles(titles: string[]) {
   return `${cleaned.slice(0, 3).join(", ")} +${cleaned.length - 3} more`;
 }
 
+function formatOrigin(origin?: DownloadOrigin) {
+  if (!origin) return [];
+  return [
+    `Country: ${origin.countryCode ?? "Unavailable"}`,
+    `IP address: ${origin.ipAddress ?? "Unavailable"}`,
+  ];
+}
+
 export function formatVerifiedSaleAlert(alert: VerifiedSaleAlert) {
   return [
     "New Ehode sale",
     `Order #${alert.orderId}`,
     `Total: ${alert.totalAmount.toFixed(2)} ${alert.currencyCode}`,
     `Items: ${compactTitles(alert.titles) || "Digital resource"}`,
+    ...formatOrigin(alert.origin),
   ].join("\n");
 }
 
@@ -34,6 +52,16 @@ export function formatFreeDownloadAlert(alert: FreeDownloadAlert) {
     "Free Ehode resource downloaded",
     `Resource: ${alert.listingTitle.trim() || "Digital resource"}`,
     `File: ${alert.filename.trim() || "Download"}`,
+    ...formatOrigin(alert.origin),
+  ].join("\n");
+}
+
+export function formatPaidDownloadAlert(alert: PaidDownloadAlert) {
+  return [
+    "Purchased Ehode resource downloaded",
+    `Resource: ${alert.listingTitle.trim() || "Digital resource"}`,
+    `File: ${alert.filename.trim() || "Download"}`,
+    ...formatOrigin(alert.origin),
   ].join("\n");
 }
 
@@ -75,4 +103,8 @@ export function notifyVerifiedSale(alert: VerifiedSaleAlert) {
 
 export function notifyFreeResourceDownload(alert: FreeDownloadAlert) {
   return sendTelegramOwnerNotification(formatFreeDownloadAlert(alert));
+}
+
+export function notifyPaidResourceDownload(alert: PaidDownloadAlert) {
+  return sendTelegramOwnerNotification(formatPaidDownloadAlert(alert));
 }

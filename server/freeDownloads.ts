@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { and, eq } from "drizzle-orm";
 import { marketplaceListings, productAssets } from "../drizzle/schema";
 import { getDb } from "./db";
+import { getDownloadOrigin } from "./downloadOrigin";
 import { storageRead } from "./storage";
 import { notifyFreeResourceDownload } from "./telegramSaleNotification";
 
@@ -49,7 +50,7 @@ export function registerFreeDownloadRoutes(app: Express) {
         "X-Content-Type-Options": "nosniff",
       });
       res.status(200).send(bytes);
-      await notifyFreeResourceDownload({ listingTitle: file.listingTitle, filename });
+      await notifyFreeResourceDownload({ listingTitle: file.listingTitle, filename, origin: getDownloadOrigin(req) });
       return;
     } catch (error) {
       console.error("[Free download] Failed to serve attachment", error);

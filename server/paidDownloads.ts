@@ -1,8 +1,10 @@
 import type { Express, Request, Response } from "express";
 import { eq } from "drizzle-orm";
-import { downloadGrants, productAssets } from "../drizzle/schema";
+import { downloadGrants, marketplaceOrderItems, productAssets } from "../drizzle/schema";
 import { getDb } from "./db";
+import { getDownloadOrigin } from "./downloadOrigin";
 import { storageRead } from "./storage";
+import { notifyPaidResourceDownload } from "./telegramSaleNotification";
 
 function safeAttachmentName(filename: string) {
   return filename.replace(/[\r\n"\\]/g, "_").slice(0, 180) || "ehode-download";
@@ -16,9 +18,10 @@ export function registerPaidDownloadRoutes(app: Express) {
     try {
       const db = await getDb();
       if (!db) return res.status(503).send("Downloads are temporarily unavailable.");
-      const rows = await db.select({ grant: downloadGrants, asset: productAssets })
+      const rows = await db.select({ grant: downloadGrants, asset: productAssets, listingTitle: marketplaceOrderItems.title })
         .from(downloadGrants)
         .innerJoin(productAssets, eq(downloadGrants.assetId, productAssets.id))
+        .innerJoin(marketplaceOrderItems, eq(downloadGrants.orderItemId, marketplaceOrderItems.id))
         .where(eq(downloadGrants.accessToken, token))
         .limit(1);
       const row = rows[0];
@@ -39,7 +42,9 @@ export function registerPaidDownloadRoutes(app: Express) {
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       });
-      return res.status(200).send(stored.bytes);
+      res.status(200).send(stored.bytes);
+      await notifyPaidResourceDownload({ listingTitle: row.listingTitle, filename, origin: getDownloadOrigin(req) });
+      return;
     } catch (error) {
       console.error("[Paid download] Failed to serve attachment", error);
       return res.status(500).send("The download could not be prepared.");

@@ -262,3 +262,4 @@
 - [ ] Prepare and connect a non-intrusive Google AdSense setup for Ehode without degrading shopping and download usability.
 - [x] Make every product/resource page open at its top hero position on phone and desktop instead of preserving the previous lower scroll position.
 - [x] Add minimal country and IP-origin information to private Telegram alerts for completed downloads, with no public exposure or unnecessary retention.
+- [x] Repair the Vercel-only TypeScript build failure in the direct-upload request handler so the approved production release can complete.

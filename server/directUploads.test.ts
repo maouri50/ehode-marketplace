@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createUploadPath } from "./directUploads";
+import { createUploadPath, getUploadRequestBody } from "./directUploads";
 
 describe("direct Vercel Blob upload paths", () => {
   it("keeps resource files scoped to their product and normalizes unsafe filename characters", () => {
@@ -10,5 +10,12 @@ describe("direct Vercel Blob upload paths", () => {
   it("uses the private cover namespace for product images", () => {
     const path = createUploadPath(7, "cover", "cover image.webp");
     expect(path).toMatch(/^product-covers\/7\/[0-9a-f-]+-cover-image\.webp$/);
+  });
+
+  it("reads request bodies through a portable structural contract", () => {
+    const body = { type: "blob.generate-client-token", payload: "safe-test-body" };
+
+    expect(getUploadRequestBody({ body })).toBe(body);
+    expect(getUploadRequestBody({ headers: {} })).toBeUndefined();
   });
 });

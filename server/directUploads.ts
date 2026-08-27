@@ -25,12 +25,21 @@ export function createUploadPath(listingId: number, kind: "file" | "cover", file
   return `${folder}/${listingId}/${crypto.randomUUID()}-${safeFilename(filename)}`;
 }
 
+/**
+ * Keep Vercel's build independent of Express body-parser declaration details.
+ * The upload library validates the value and rejects missing or invalid bodies.
+ */
+export function getUploadRequestBody(request: unknown): HandleUploadPresignedBody {
+  if (!request || typeof request !== "object") return undefined as unknown as HandleUploadPresignedBody;
+  return (request as { body?: unknown }).body as HandleUploadPresignedBody;
+}
+
 export function registerDirectUploadRoutes(app: Express) {
   app.post("/api/blob-upload/token", async (req: Request, res: Response) => {
     if (!hasAdminSession(req as any)) return res.status(401).json({ error: "Admin sign-in is required." });
     try {
       const response = await handleUploadPresigned({
-        body: req.body as HandleUploadPresignedBody,
+        body: getUploadRequestBody(req),
         request: req,
         getSignedToken: async (pathname, clientPayload) => {
           const payload = parseUploadPayload(clientPayload);

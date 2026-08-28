@@ -2,12 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockedGetDb = vi.hoisted(() => vi.fn());
 const mockedCapturePayPalOrder = vi.hoisted(() => vi.fn());
+const mockedSendOrderDeliveryEmail = vi.hoisted(() => vi.fn());
+const mockedNotifyVerifiedSale = vi.hoisted(() => vi.fn());
 
 vi.mock("./db", () => ({ getDb: mockedGetDb }));
 vi.mock("./paypal", () => ({
   capturePayPalOrder: mockedCapturePayPalOrder,
   createPayPalOrder: vi.fn(),
 }));
+vi.mock("./orderDeliveryEmail", () => ({ sendOrderDeliveryEmail: mockedSendOrderDeliveryEmail }));
+vi.mock("./telegramSaleNotification", () => ({ notifyVerifiedSale: mockedNotifyVerifiedSale }));
 
 import { storefrontRouter } from "./routers/storefront";
 
@@ -44,6 +48,8 @@ function setCaptureDatabase() {
 describe("PayPal capture buyer email persistence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedSendOrderDeliveryEmail.mockResolvedValue({ sent: false });
+    mockedNotifyVerifiedSale.mockResolvedValue({ sent: false, reason: "test" });
     mockedCapturePayPalOrder.mockResolvedValue({
       purchase_units: [{
         reference_id: "1:1",

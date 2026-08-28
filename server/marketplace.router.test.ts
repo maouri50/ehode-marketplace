@@ -40,4 +40,18 @@ describe("storefront.owner.listings", () => {
       code: "FORBIDDEN",
     });
   });
+
+  it("does not allow an anonymous visitor to change the storefront announcement bar", async () => {
+    const caller = appRouter.createCaller(createAnonymousContext());
+
+    await expect(caller.storefront.owner.saveAnnouncementBar({
+      backgroundColor: "#f1641e",
+      textColor: "#ffffff",
+      fontFamily: "sans",
+      rotationSeconds: 4,
+      messages: ["Private owner setting"],
+    })).rejects.toMatchObject<Partial<TRPCError>>({
+      code: "FORBIDDEN",
+    });
+  });
 });

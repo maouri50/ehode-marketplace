@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { Resend } from "resend";
 import { z } from "zod";
 import { buyerAccounts, buyerReviews, catalogCategories, contactMessages, downloadGrants, marketplaceListings, marketplaceOrderItems, marketplaceOrders, newsletterCampaignRecipients, newsletterCampaigns, newsletterSubscriptions, productAssets, shops } from "../../drizzle/schema";
+import { ANNOUNCEMENT_FONT_VALUES, type AnnouncementBarConfiguration } from "../../shared/announcementBar";
 import { getDb } from "../db";
 import { capturePayPalOrder, createPayPalOrder } from "../paypal";
 import { storagePut } from "../storage";
@@ -20,6 +21,7 @@ import { ensureBuyerFeatureSchema } from "../buyerSchema";
 import { buildVerifiedReviewPublication } from "../reviewPublication";
 import { ensureLegacyCatalogRecovery } from "../legacyCatalogRecovery";
 import { forwardContactMessage } from "../contactForwarding";
+import { getAnnouncementBarConfiguration, saveAnnouncementBarConfiguration } from "../announcementBarSettings";
 import { adminSessionProcedure, buyerSessionProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
@@ -48,6 +50,18 @@ const newsletterCampaignInput = z.object({
   if (value.templateType === "seasonal" && !value.seasonLabel) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a season or occasion name for this campaign.", path: ["seasonLabel"] });
   if (["seasonal", "selected"].includes(value.templateType) && value.listingIds.length === 0) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Choose at least one published resource for this campaign.", path: ["listingIds"] });
 });
+const announcementBarInput = z.object({
+  backgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i, "Choose a valid background colour."),
+  textColor: z.string().regex(/^#[0-9a-f]{6}$/i, "Choose a valid text colour."),
+  fontFamily: z.enum(ANNOUNCEMENT_FONT_VALUES),
+  rotationSeconds: z.number().int().min(2).max(12),
+  messages: z.array(z.string().trim().min(2).max(220)).min(1).max(20),
+}).transform((value): AnnouncementBarConfiguration => ({
+  ...value,
+  backgroundColor: value.backgroundColor.toLowerCase(),
+  textColor: value.textColor.toLowerCase(),
+  messages: value.messages.map((message) => message.trim()),
+}));
 const activeListing = eq(marketplaceListings.status, "published");
 
 export function resolveBuyerEmail(buyerEmail: string | null | undefined, paypalPayerEmail: string | null | undefined) {
@@ -158,6 +172,9 @@ export const storefrontRouter = router({
       if (!assets.length) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "The free file is still being prepared." });
       return { files: assets.map((asset) => ({ filename: asset.originalFilename, url: `/api/download/free/${listing[0]!.id}/${asset.id}` })) };
     }),
+  }),
+  announcement: router({
+    get: publicProcedure.query(async () => getAnnouncementBarConfiguration(await requireDb())),
   }),
   newsletter: router({
     subscribe: publicProcedure.input(z.object({ email: newsletterEmailInput })).mutation(async ({ input }) => {
@@ -310,6 +327,8 @@ export const storefrontRouter = router({
     }),
   }),
   owner: router({
+    announcementBar: adminSessionProcedure.query(async () => getAnnouncementBarConfiguration(await requireDb())),
+    saveAnnouncementBar: adminSessionProcedure.input(announcementBarInput).mutation(async ({ input }) => saveAnnouncementBarConfiguration(await requireDb(), input)),
     contactMessages: adminSessionProcedure.query(async () => {
       const db = await requireDb();
       return db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt)).limit(100);

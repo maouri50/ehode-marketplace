@@ -137,6 +137,27 @@ export const newsletterCampaignRecipients = mysqlTable("newsletterCampaignRecipi
   sentAt: timestamp("sentAt").defaultNow().notNull(),
 }, (table) => [uniqueIndex("newsletter_campaign_recipient_unique").on(table.campaignId, table.email), index("newsletter_campaign_recipients_campaign_idx").on(table.campaignId)]);
 
+/** A single owner-managed storefront announcement bar, kept separate from shopper data. */
+export const announcementBarSettings = mysqlTable("announcementBarSettings", {
+  id: int("id").primaryKey(),
+  backgroundColor: varchar("backgroundColor", { length: 7 }).default("#f1641e").notNull(),
+  textColor: varchar("textColor", { length: 7 }).default("#ffffff").notNull(),
+  fontFamily: varchar("fontFamily", { length: 24 }).default("sans").notNull(),
+  rotationSeconds: int("rotationSeconds").default(4).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+/** Ordered owner-authored announcements; only their text is visible to visitors. */
+export const announcementBarMessages = mysqlTable("announcementBarMessages", {
+  id: int("id").autoincrement().primaryKey(),
+  message: varchar("message", { length: 220 }).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("announcement_bar_messages_active_idx").on(table.isActive), index("announcement_bar_messages_order_idx").on(table.sortOrder)]);
+
 export const sellerStatusValues = ["active", "invited", "suspended"] as const;
 export const shopStatusValues = ["active", "draft", "archived"] as const;
 export const listingStatusValues = ["draft", "published", "archived"] as const;
